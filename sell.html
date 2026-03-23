@@ -75,6 +75,12 @@
         .input-group label { display: block; margin-bottom: 8px; font-size: 0.8rem; text-transform: uppercase; color: var(--accent-main); font-weight: 600; }
         .form-control { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); outline: none; }
         .btn-submit { grid-column: span 2; padding: 18px; background: var(--accent-main); color: var(--text-inverse); border: none; border-radius: 50px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        @media (max-width: 768px) {
+            .sell-card { grid-template-columns: 1fr; }
+            .sell-header, .btn-submit { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
@@ -108,24 +114,37 @@
                 <input type="text" id="author" class="form-control" required placeholder="Full Name">
             </div>
             <div class="input-group">
+                <label>Category</label>
+                <select id="category" class="form-control" required style="background: rgba(0,0,0,0.5);">
+                    <option value="fiction">Fiction</option>
+                    <option value="tech">Academic & Tech</option>
+                    <option value="history">History</option>
+                    <option value="science">Science</option>
+                    <option value="philosophy">Philosophy</option>
+                </select>
+            </div>
+            <div class="input-group">
                 <label>Asking Price (₹)</label>
-                <input type="number" id="price" class="form-control" required>
+                <input type="number" id="price" class="form-control" required min="1">
             </div>
         </form>
 
         <div class="cover-section">
             <label style="display:block; margin-bottom:10px; font-size:0.8rem; text-transform:uppercase; color:var(--accent-main); font-weight:600;">Book Cover</label>
-            <div id="upload-box" style="border: 2px dashed var(--border); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.1);" onclick="document.getElementById('imageFile').click()">
+            <div id="upload-box" style="border: 2px dashed var(--border); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.1); position: relative; overflow: hidden;" onclick="document.getElementById('imageFile').click()">
                 <i class="fas fa-cloud-upload-alt" style="font-size: 2rem;"></i>
                 <img id="preview" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none;">
             </div>
             <input type="file" id="imageFile" hidden accept="image/*" onchange="previewImg(this)">
         </div>
 
-        <button type="submit" form="sellBookForm" class="btn-submit">Dispatch to Archives</button>
+        <button type="submit" form="sellBookForm" class="btn-submit" id="submitBtn">Dispatch to Archives</button>
     </div>
 
     <script>
+        // Use the live API URL!
+        const API_URL = "https://bookwanderer-api.onrender.com";
+
         // === THEME ENGINE ===
         function loadTheme() {
             const theme = localStorage.getItem('bookwanderer_theme') || 'default';
@@ -133,38 +152,112 @@
         }
         loadTheme();
 
-        // === STRICT SYNC LOGIC (FIXES CART 1 BUG) ===
-        function syncStatus() {
+        // === SECURE SYNC LOGIC ===
+        async function syncStatus() {
             const userData = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
             const authBtn = document.getElementById('auth-btn');
             const countEl = document.getElementById('cart-count');
 
-            if (userData && userData !== "undefined") {
+            if (userData && token) {
                 const user = JSON.parse(userData);
                 authBtn.href = (user.email === 'book.wanderer13@gmail.com') ? "admin.html" : "account.html";
                 authBtn.innerHTML = `<i class="fas fa-user-circle"></i><span>Account</span>`;
                 
-                // Real-time Cart Count
-                const cartData = localStorage.getItem('cart');
-                if (!cartData || cartData === "undefined" || cartData === "[]") {
+                // Real-time Cart Count fetched securely from the live server
+                try {
+                    const res = await fetch(`${API_URL}/cart/${user.email}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    countEl.innerText = `Cart (${data.cart_data ? data.cart_data.length : 0})`;
+                } catch(e) {
                     countEl.innerText = "Cart (0)";
-                } else {
-                    countEl.innerText = `Cart (${JSON.parse(cartData).length})`;
                 }
             } else {
-                // GUEST STATE - FORCE ZERO
                 countEl.innerText = "Cart (0)";
                 authBtn.href = "login.html";
                 authBtn.innerHTML = `<i class="fas fa-user"></i><span>Login</span>`;
             }
         }
 
+        // === NEW: THE MISSING SUBMIT FUNCTION ===
+        async function handleSellSubmit(e) {
+            e.preventDefault();
+            
+            const userData = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            
+            if (!userData || !token) {
+                alert("You must log in to submit volumes to the archive.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "Transcribing...";
+            btn.disabled = true;
+
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const category = document.getElementById('category').value;
+            const price = document.getElementById('price').value;
+            const imgEl = document.getElementById('preview');
+            
+            // Generate base64 image or use a default if they didn't upload one
+            let imageBase64 = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400&auto=format&fit=crop"; 
+            if (imgEl.src && imgEl.src.startsWith('data:image')) {
+                imageBase64 = imgEl.src;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/books`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        author: author,
+                        category: category,
+                        condition: "Pre-loved", // default condition
+                        price: parseFloat(price),
+                        notes: "Submitted by Scholar",
+                        image: imageBase64,
+                        seller_email: user.email
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Volume successfully dispatched to the Archives!");
+                    window.location.href = "index.html"; // Send them back to see their book!
+                } else {
+                    alert("Failed to submit volume. Ensure your session hasn't expired.");
+                    btn.innerText = "Dispatch to Archives";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error connecting to the live vault.");
+                btn.innerText = "Dispatch to Archives";
+                btn.disabled = false;
+            }
+        }
+
         function previewImg(input) {
             if (input.files && input.files[0]) {
+                // Check file size (limit to ~2MB to prevent SQLite payload crashes)
+                if(input.files[0].size > 2000000) {
+                    alert("File is too large. Please select an image under 2MB.");
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const img = document.getElementById('preview');
-                    img.src = e.target.result; img.style.display = 'block';
+                    img.src = e.target.result; 
+                    img.style.display = 'block';
                 };
                 reader.readAsDataURL(input.files[0]);
             }
