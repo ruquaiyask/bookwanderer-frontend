@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart & Checkout | BookWanderer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --bg-overlay: rgba(31, 20, 18, 0.85); --bg-panel: rgba(42, 28, 26, 0.9); --bg-header: rgba(31, 20, 18, 0.98);
+            --card-bg: rgba(42, 28, 26, 0.6); --accent-main: #d4af37; --accent-sec: #c17f59;
+            --text-main: #f4ebd8; --text-muted: #e0d0c1; --text-inverse: #1f1412; --border: rgba(193, 127, 89, 0.3);
+            --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop');
+        }
+        [data-theme="pink"] {
+            --bg-overlay: rgba(18, 18, 20, 0.80); --bg-panel: rgba(30, 25, 30, 0.85); --bg-header: rgba(15, 15, 18, 0.95);
+            --card-bg: rgba(25, 20, 25, 0.6); --accent-main: #ff47a3; --text-main: #ffffff;
+            --border: rgba(255, 71, 163, 0.3); --theme-bg-image: url('https://images.unsplash.com/photo-1618220179428-22790b46a0eb?q=80&w=2000&auto=format&fit=crop');
+        }
+        [data-theme="pastel"] {
+            --bg-overlay: linear-gradient(135deg, rgba(255, 175, 204, 0.75), rgba(162, 210, 255, 0.75)); 
+            --bg-panel: rgba(255, 255, 255, 0.6); --bg-header: rgba(255, 255, 255, 0.90);
+            --card-bg: rgba(255, 255, 255, 0.5); --accent-main: #8a5aeb; --text-main: #2b2533;
+            --border: rgba(255, 175, 204, 0.6); --theme-bg-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body { background-image: var(--theme-bg-image); background-size: cover; background-position: center; background-attachment: fixed; font-family: 'Inter', sans-serif; color: var(--text-main); overflow-x: hidden; position: relative; }
+        body::before { content: ''; position: fixed; inset: 0; background: var(--bg-overlay); z-index: -1; backdrop-filter: blur(4px); }
+        #dust-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.15; }
+        
+        header { position: sticky; top: 0; z-index: 1000; background: var(--bg-header); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); }
+        .header-main { padding: 15px 4%; display: flex; align-items: center; justify-content: space-between; }
+        .brand { font-family: 'Cinzel'; font-size: 1.6rem; text-decoration: none; color: var(--text-main); }
+        .brand span { color: var(--accent-main); }
+        .nav-icons { display: flex; gap: 25px; align-items: center; }
+        .icon-item { color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; text-decoration: none; transition: 0.3s; }
+        .icon-item i { font-size: 1.1rem; color: var(--text-main); margin-bottom: 3px; }
+
+        .page-container { padding: 40px 4%; position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; }
+        .layout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+        .glass-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; backdrop-filter: blur(15px); }
+        .section-title { font-family: 'Cinzel'; font-size: 1.1rem; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px; text-transform: uppercase; }
+
+        .cart-item-row { display: flex; gap: 15px; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .cart-item-row img { width: 50px; height: 75px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); }
+        
+        .auth-prompt { text-align: center; padding: 60px 0; }
+        .auth-prompt i { font-size: 3rem; margin-bottom: 20px; color: var(--accent-sec); opacity: 0.7; }
+        .btn-auth-link { display: inline-block; margin-top: 20px; padding: 12px 35px; background: var(--accent-main); color: var(--text-inverse); border-radius: 30px; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: var(--accent-main); }
+        .form-control { width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); outline: none; }
+        
+        .payment-option { display: flex; flex-direction: column; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .payment-option-header { display: flex; align-items: center; }
+        .payment-option:hover { border-color: var(--accent-main); }
+        .payment-option input[type="radio"] { margin-right: 15px; accent-color: var(--accent-main); }
+
+        .btn-primary { width: 100%; padding: 15px; background: transparent; color: var(--text-main); border: 1px solid var(--text-main); border-radius: 50px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 20px; }
+        .btn-primary:hover:not(:disabled) { background: var(--text-main); color: var(--text-inverse); }
+        .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none !important; }
+
+        /* PAYMENT MODAL STYLES */
+        #payment-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        #payment-modal.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--bg-panel); border: 1px solid var(--accent-main); border-radius: 12px;
+            padding: 40px; text-align: center; max-width: 400px; width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative;
+        }
+        .qr-box { background: white; padding: 15px; border-radius: 8px; display: inline-block; margin: 20px 0; }
+        .qr-box img { width: 200px; height: 200px; display: block; }
+
+        /* INVOICE TEMPLATE */
+        #invoice-wrapper { display: none; }
+        .invoice-box {
+            background: #ffffff; color: #333; padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            max-width: 800px; margin: auto; font-size: 14px; line-height: 24px;
+        }
+        .invoice-box h1 { font-family: 'Cinzel', serif; color: #2A1C1A; margin-bottom: 5px; }
+        .invoice-header { display: flex; justify-content: space-between; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 20px; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .invoice-table th, .invoice-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .invoice-table th { background: #f4ebd8; color: #2A1C1A; }
+        .invoice-total { text-align: right; font-size: 18px; font-weight: bold; color: #d4af37; margin-top: 20px; }
+        .invoice-footer { margin-top: 40px; text-align: center; color: #777; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <canvas id="dust-canvas"></canvas>
+    <header>
+        <div class="header-main">
+            <a href="index.html" class="brand">BOOK <span>WANDERER</span></a>
+            <div class="nav-icons">
+                <a href="index.html" class="icon-item"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="sell.html" class="icon-item"><i class="fas fa-tag"></i><span>Sell Books</span></a>
+                <a href="checkout.html" class="icon-item" style="color: var(--accent-main);"><i class="fas fa-shopping-bag"></i><span id="cart-count">Cart (0)</span></a>
+                <a href="login.html" class="icon-item" id="auth-btn"><i class="fas fa-user"></i><span>Login</span></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-container">
+        <div id="cart-view" class="view-section active">
+            <h1 style="text-align: center; font-family: 'Cinzel'; font-size: 2.5rem; margin-bottom: 30px;">YOUR <span>Cart</span></h1>
+            <div class="layout-grid">
+                <div class="glass-box">
+                    <h3 class="section-title">Selected Books</h3>
+                    <div id="cart-container"></div>
+                </div>
+                <div class="glass-box" style="height: fit-content;">
+                    <h3 class="section-title">Order Summary</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span>Subtotal</span><span id="sub-total">₹ 0</span></div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;"><span>Shipping</span><span style="color:var(--accent-sec)">Free</span></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.3rem; border-top: 1px dashed var(--border); padding-top: 15px;">
+                        <span>Total</span><span id="grand-total">₹ 0</span>
+                    </div>
+                    <button class="btn-primary" id="proceed-btn" disabled onclick="showCheckout()">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="checkout-view" class="view-section">
+            <h1 style="text-align: center; font-family: 'Cinzel'; font-size: 2.5rem; margin-bottom: 30px;">SECURE <span>Checkout</span></h1>
+            <button onclick="showCart()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; margin-bottom:15px;"><i class="fas fa-arrow-left"></i> Back to Cart</button>
+            
+            <form id="checkoutForm" onsubmit="handleCheckoutSubmit(event)">
+                <div class="layout-grid">
+                    <div>
+                        <div class="glass-box" style="margin-bottom: 20px;">
+                            <h3 class="section-title">Shipping Information</h3>
+                            <div class="input-group hidden" id="saved-addr-group">
+                                <label><i class="fas fa-bookmark"></i> Use Saved Address</label>
+                                <select class="form-control" id="addr-selector" onchange="applySavedAddr()"></select>
+                            </div>
+                            <div class="input-group"><label>Recipient Name</label><input type="text" id="chk-name" class="form-control" required></div>
+                            <div class="input-group"><label>Address Line</label><input type="text" id="chk-addr" class="form-control" required></div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="input-group"><label>City</label><input type="text" id="chk-city" class="form-control" required></div>
+                                <div class="input-group"><label>Pincode</label><input type="text" id="chk-pin" class="form-control" required></div>
+                            </div>
+                        </div>
+
+                        <div class="glass-box">
+                            <h3 class="section-title">Payment Method</h3>
+                            <label class="payment-option">
+                                <div class="payment-option-header">
+                                    <input type="radio" name="pay" value="upi" checked><span><i class="fas fa-qrcode"></i> UPI (Scan & Pay)</span>
+                                </div>
+                            </label>
+                            <label class="payment-option">
+                                <div class="payment-option-header">
+                                    <input type="radio" name="pay" value="cod"><span><i class="fas fa-truck"></i> Cash on Delivery</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="glass-box" style="height: fit-content;">
+                        <h3 class="section-title">Final Review</h3>
+                        <div class="input-group" style="display: flex; gap: 10px; margin-bottom: 5px;">
+                            <input type="text" id="promo-input" class="form-control" placeholder="Promo Code">
+                            <button type="button" class="btn-primary" style="margin-top: 0; width: auto; padding: 10px 20px;" onclick="applyPromo()">Apply</button>
+                        </div>
+                        <div id="promo-msg" style="font-size: 0.8rem; margin-bottom: 20px;"></div>
+                        <div id="final-items" style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;"></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem;" class="hidden" id="discount-row">
+                            <span>Discount Applied</span><span id="discount-amount" style="color: #4caf50;">- ₹ 0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem;"><span>Total Tribute</span><span id="final-pay" style="color:var(--accent-main)">₹ 0</span></div>
+                        <button type="submit" class="btn-primary" style="background:var(--accent-main); color:var(--text-inverse); border:none;">Transcribe Order</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="payment-modal">
+        <div class="modal-content">
+            <h2 style="font-family: 'Cinzel'; margin-bottom: 10px; color: var(--accent-main);">Scan to Pay</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">1. Scan the QR and pay <b><span id="modal-amount">₹0</span></b><br>2. Copy the 12-digit UTR/Transaction ID from your app.</p>
+            <div class="qr-box">
+                <img id="dynamic-qr" src="" alt="UPI QR Code">
+            </div>
+            
+            <div class="input-group" style="text-align: left; margin-top: 10px;">
+                <label style="color: var(--accent-main);">Enter Transaction ID (UTR)</label>
+                <input type="text" id="utr-input" class="form-control" placeholder="12-digit Number" maxlength="12">
+            </div>
+
+            <button class="btn-primary" onclick="submitFinalConfirmation()" style="background:var(--accent-main); color:var(--text-inverse); border:none; margin-top: 15px;">Confirm Payment</button>
+            <p onclick="closeModal()" style="color:gray; cursor:pointer; font-size: 0.8rem; margin-top: 10px;">Cancel Transaction</p>
+        </div>
+    </div>
+
+    <div id="invoice-wrapper">
+        <div class="invoice-box" id="invoice-content">
+            <div class="invoice-header">
+                <div><h1>BookWanderer</h1><p>The Premium Pre-loved Archives</p></div>
+                <div style="text-align: right;"><h3>INVOICE</h3><p id="inv-date"></p><p id="inv-order-id"></p></div>
+            </div>
+            <div style="margin-bottom: 30px;"><strong>Billed To:</strong><br><span id="inv-name"></span><br><span id="inv-email"></span><br><span id="inv-address"></span></div>
+            <table class="invoice-table">
+                <thead><tr><th>Item Description</th><th>Condition</th><th>Price</th></tr></thead>
+                <tbody id="inv-items-table"></tbody>
+            </table>
+            <div class="invoice-total">Total Paid: ₹ <span id="inv-total"></span></div>
+            <div class="invoice-footer">Thank you for your purchase. May your new books bring you endless adventures.</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:3000";
+        let currentCartItems = []; 
+        let totalVal = 0; 
+        let savedAddrs = [];
+        let appliedDiscountPercent = 0;
+        let finalPayableAmount = 0;
+
+        function loadTheme() {
+            const theme = localStorage.getItem('bookwanderer_theme') || 'default';
+            if (theme !== 'default') document.documentElement.setAttribute('data-theme', theme);
+        }
+        loadTheme();
+
+        async function syncCart() {
+            const userData = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            const container = document.getElementById('cart-container');
+            const authBtn = document.getElementById('auth-btn');
+            const proceedBtn = document.getElementById('proceed-btn');
+
+            if (!userData || !token) {
+                container.innerHTML = `<div class="auth-prompt"><i class="fas fa-user-lock"></i><p>Please sign in to view your cart.</p><a href="login.html" class="btn-auth-link">Login to Archives</a></div>`;
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            authBtn.href = (user.email === 'book.wanderer13@gmail.com') ? "admin.html" : "account.html";
+            authBtn.innerHTML = `<i class="fas fa-user-circle"></i><span>Account</span>`;
+
+            try {
+                const res = await fetch(`${API_URL}/cart/${user.email}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                currentCartItems = data.cart_data || [];
+                document.getElementById('cart-count').innerText = `Cart (${currentCartItems.length})`;
+
+                if (currentCartItems.length === 0) {
+                    container.innerHTML = `<div class="auth-prompt"><p>Your archive selection is empty.</p></div>`;
+                    proceedBtn.disabled = true;
+                } else {
+                    let total = 0;
+                    container.innerHTML = currentCartItems.map((item, idx) => {
+                        total += parseFloat(item.price);
+                        return `<div class="cart-item-row"><img src="${item.image || ''}"><div><h4>${item.title}</h4></div><div style="margin-left:auto">₹${item.price}</div><i class="fas fa-trash-alt" onclick="removeFromCart(${idx})" style="color:red; cursor:pointer; margin-left:10px;"></i></div>`;
+                    }).join('');
+                    
+                    totalVal = total;
+                    finalPayableAmount = total;
+                    document.getElementById('sub-total').innerText = `₹ ${total}`;
+                    document.getElementById('grand-total').innerText = `₹ ${total}`;
+                    proceedBtn.disabled = false;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function removeFromCart(index) {
+            const token = localStorage.getItem('token');
+            currentCartItems.splice(index, 1);
+            await fetch(`${API_URL}/cart`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+                body: JSON.stringify({ cart_data: currentCartItems }) 
+            });
+            syncCart();
+        }
+
+        async function showCheckout() {
+            document.getElementById('cart-view').classList.remove('active');
+            document.getElementById('checkout-view').classList.add('active');
+            updateFinalTotal();
+            document.getElementById('final-items').innerHTML = currentCartItems.map(i => `<div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:5px;"><span>${i.title}</span><span>₹${i.price}</span></div>`).join('');
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_URL}/addresses/${user.email}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                savedAddrs = result.data || [];
+                if(savedAddrs.length > 0) {
+                    document.getElementById('saved-addr-group').classList.remove('hidden');
+                    const sel = document.getElementById('addr-selector');
+                    sel.innerHTML = `<option value="new">-- Enter New --</option>` + savedAddrs.map((a,i) => `<option value="${i}">${a.name} (${a.city})</option>`).join('');
+                }
+            } catch(e){}
+        }
+
+        function applySavedAddr() {
+            const i = document.getElementById('addr-selector').value;
+            if(i === 'new') { document.getElementById('checkoutForm').reset(); return; }
+            const a = savedAddrs[i];
+            document.getElementById('chk-name').value = a.name;
+            document.getElementById('chk-addr').value = a.address_text;
+            document.getElementById('chk-city').value = a.city;
+            document.getElementById('chk-pin').value = a.pin;
+        }
+
+        function showCart() { document.getElementById('checkout-view').classList.remove('active'); document.getElementById('cart-view').classList.add('active'); }
+
+        async function applyPromo() {
+            const code = document.getElementById('promo-input').value.trim();
+            if(!code) return;
+            try {
+                // Public route, no token needed
+                const res = await fetch(`${API_URL}/validate-promo`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+                const data = await res.json();
+                const msgEl = document.getElementById('promo-msg');
+                if(data.valid) {
+                    appliedDiscountPercent = data.discount;
+                    msgEl.innerText = `Success! ${data.discount}% off applied.`;
+                    msgEl.style.color = '#4caf50';
+                } else {
+                    appliedDiscountPercent = 0;
+                    msgEl.innerText = "Invalid or expired code.";
+                    msgEl.style.color = '#ff4c4c';
+                }
+                updateFinalTotal();
+            } catch(e) { console.error(e); }
+        }
+
+        function updateFinalTotal() {
+            const discountAmt = Math.floor(totalVal * (appliedDiscountPercent / 100));
+            finalPayableAmount = totalVal - discountAmt;
+            if(appliedDiscountPercent > 0) {
+                document.getElementById('discount-row').classList.remove('hidden');
+                document.getElementById('discount-amount').innerText = `- ₹ ${discountAmt}`;
+            }
+            document.getElementById('final-pay').innerText = `₹ ${finalPayableAmount}`;
+            document.getElementById('modal-amount').innerText = `₹ ${finalPayableAmount}`;
+        }
+
+        // ==========================================
+        // 💳 UPDATED PAYMENT LOGIC (REAL CONFIRMATION)
+        // ==========================================
+        async function handleCheckoutSubmit(e) {
+            e.preventDefault();
+            const method = document.querySelector('input[name="pay"]:checked').value;
+            
+            if (method === 'upi') {
+                const upiString = `upi://pay?pa=9822417183@upi&pn=BookWanderer&am=${finalPayableAmount}&cu=INR`;
+                document.getElementById('dynamic-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}`;
+                document.getElementById('payment-modal').classList.add('active');
+            } else {
+                finalizePurchase("Cash on Delivery"); 
+            }
+        }
+
+        async function submitFinalConfirmation() {
+            const utr = document.getElementById('utr-input').value.trim();
+            if (utr.length < 12) {
+                alert("Please enter a valid 12-digit Transaction ID/UTR.");
+                return;
+            }
+            finalizePurchase(`UPI - UTR: ${utr}`);
+        }
+
+        async function finalizePurchase(paymentInfo) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_URL}/orders`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+                    body: JSON.stringify({ 
+                        total_amount: finalPayableAmount, 
+                        items: currentCartItems,
+                        payment_method: paymentInfo // Stores the UTR or COD info
+                    }) 
+                });
+                
+                if (res.ok) {
+                    await fetch(`${API_URL}/cart`, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+                        body: JSON.stringify({ cart_data: [] }) 
+                    });
+                    document.getElementById('payment-modal').classList.remove('active');
+                    alert("Order Transcribed! Generating your Archive Receipt...");
+                    generatePDFInvoice(user);
+                } else {
+                    alert("Price mismatch or unauthorized access. Order halted.");
+                }
+            } catch (err) { alert("Error connecting to archives."); }
+        }
+
+        function closeModal() { document.getElementById('payment-modal').classList.remove('active'); }
+
+        function generatePDFInvoice(user) {
+            document.getElementById('inv-date').innerText = `Date: ${new Date().toLocaleDateString()}`;
+            document.getElementById('inv-order-id').innerText = `Order ID: BW-${Math.floor(Math.random() * 90000) + 10000}`;
+            document.getElementById('inv-name').innerText = document.getElementById('chk-name').value;
+            document.getElementById('inv-email').innerText = user.email;
+            document.getElementById('inv-address').innerText = `${document.getElementById('chk-addr').value}, ${document.getElementById('chk-city').value} - ${document.getElementById('chk-pin').value}`;
+            
+            document.getElementById('inv-items-table').innerHTML = currentCartItems.map(item => `<tr><td>${item.title}</td><td>Pre-loved</td><td>₹${item.price}</td></tr>`).join('');
+            document.getElementById('inv-total').innerText = finalPayableAmount;
+
+            const element = document.getElementById('invoice-content');
+            element.parentElement.style.display = 'block'; 
+            const opt = { margin: 0.5, filename: `Invoice_BW.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter' } };
+            html2pdf().set(opt).from(element).save().then(() => {
+                window.location.href = 'account.html'; 
+            });
+        }
+
+        function initDust() {
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const particles = [];
+            for(let i=0; i<70; i++) { particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, radius: Math.random()*2+0.5, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, alpha: Math.random()*0.5+0.2 }); }
+            function animate() {
+                requestAnimationFrame(animate); ctx.clearRect(0,0,canvas.width,canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    ctx.fill();
+                });
+            }
+            animate();
+        }
+        window.onload = () => { initDust(); syncCart(); };
+    </script>
+</body>
+</html>

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account | BookWanderer</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* === DYNAMIC THEME VARIABLES (SYNCED) === */
+        :root {
+            --bg-overlay: rgba(31, 20, 18, 0.85); 
+            --bg-panel: rgba(42, 28, 26, 0.9); 
+            --bg-header: rgba(31, 20, 18, 0.98);
+            --card-bg: rgba(42, 28, 26, 0.6);
+            --accent-main: #d4af37; 
+            --accent-sec: #c17f59; 
+            --text-main: #f4ebd8; 
+            --text-muted: #e0d0c1;
+            --text-inverse: #1f1412;
+            --border: rgba(193, 127, 89, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pink"] {
+            --bg-overlay: rgba(18, 18, 20, 0.80); 
+            --bg-panel: rgba(30, 25, 30, 0.85); 
+            --bg-header: rgba(15, 15, 18, 0.95);
+            --card-bg: rgba(25, 20, 25, 0.6);
+            --accent-main: #ff47a3; 
+            --accent-sec: #ff85c2; 
+            --text-main: #ffffff; 
+            --text-muted: #d1b8c4;
+            --text-inverse: #121212;
+            --border: rgba(255, 71, 163, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1618220179428-22790b46a0eb?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pastel"] {
+            --bg-overlay: linear-gradient(135deg, rgba(255, 175, 204, 0.75), rgba(162, 210, 255, 0.75)); 
+            --bg-panel: rgba(255, 255, 255, 0.6); 
+            --bg-header: rgba(255, 255, 255, 0.90);
+            --card-bg: rgba(255, 255, 255, 0.5);
+            --accent-main: #8a5aeb; 
+            --accent-sec: #ff7aa2; 
+            --text-main: #2b2533; 
+            --text-muted: #575061;
+            --text-inverse: #ffffff;
+            --border: rgba(255, 175, 204, 0.6); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        /* === CORE STYLES === */
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        
+        body { 
+            background-image: var(--theme-bg-image); background-size: cover; background-position: center; background-attachment: fixed;
+            font-family: 'Inter', sans-serif; font-weight: 300; color: var(--text-main);
+            overflow-x: hidden; transition: background-image 0.5s ease-in-out; position: relative;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; background: var(--bg-overlay);
+            z-index: -1; transition: background 0.5s ease-in-out; backdrop-filter: blur(4px); 
+        }
+
+        #dust-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.15; mix-blend-mode: screen; }
+
+        h1, h2, h3, h4, .brand { font-family: 'Cinzel', serif; font-weight: 400; letter-spacing: 1px; color: var(--text-main); }
+        .serif { font-family: 'Playfair Display', serif; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+
+        /* === HEADER === */
+        header { position: sticky; top: 0; z-index: 1000; background: var(--bg-header); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.5s;}
+        .header-main { padding: 15px 4%; display: flex; align-items: center; justify-content: space-between; gap: 30px; position: relative; z-index: 10; }
+        .brand { font-size: 1.6rem; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .brand span { color: var(--accent-main); }
+        .nav-icons { display: flex; gap: 25px; align-items: center; }
+        .icon-item { color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 5px; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.5px;}
+        .icon-item:hover { color: var(--accent-main); transform: translateY(-2px); }
+        .icon-item i { font-size: 1.1rem; color: var(--text-main); }
+        .icon-item.active { color: var(--accent-main); }
+
+        /* === MODERN DASHBOARD LAYOUT === */
+        .dashboard-section { padding: 50px 4%; position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; min-height: 80vh; }
+        
+        .dashboard-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
+        .header-title-block h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 5px; font-family: 'Inter', sans-serif; letter-spacing: -0.5px;}
+        .header-title-block p { color: var(--text-muted); font-size: 1rem; }
+
+        .btn-logout {
+            padding: 10px 20px; background: rgba(0,0,0,0.1); color: var(--text-main); border: 1px solid var(--border);
+            border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px;
+        }
+        [data-theme="pastel"] .btn-logout { background: rgba(255,255,255,0.4); color: #2b2533; border-color: rgba(138, 90, 235, 0.3); }
+        .btn-logout:hover { border-color: #ff4c4c; color: #ff4c4c; background: rgba(255, 76, 76, 0.1); }
+
+        .dashboard-grid { display: grid; grid-template-columns: 260px 1fr; gap: 40px; }
+
+        /* Sidebar Navigation */
+        .sidebar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px 0; height: fit-content; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .nav-link {
+            display: flex; align-items: center; padding: 15px 25px; color: var(--text-muted); text-decoration: none;
+            font-size: 1rem; transition: 0.3s; border-left: 3px solid transparent; font-weight: 400; cursor: pointer;
+        }
+        .nav-link i { margin-right: 15px; font-size: 1.1rem; width: 20px; text-align: center; }
+        .nav-link:hover { background: rgba(0,0,0,0.1); color: var(--text-main); }
+        [data-theme="pastel"] .nav-link:hover { background: rgba(255,255,255,0.3); }
+        .nav-link.active { border-left-color: var(--accent-main); color: var(--accent-main); background: rgba(0,0,0,0.15); font-weight: 600; }
+        [data-theme="pastel"] .nav-link.active { background: rgba(255,255,255,0.5); }
+
+        /* Main Content Area */
+        .main-content { min-height: 500px; }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title { font-size: 1.4rem; margin-bottom: 20px; font-weight: 600; font-family: 'Inter', sans-serif;}
+
+        /* Quick Stat Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px;
+            backdrop-filter: blur(15px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 20px;
+        }
+        .stat-icon { width: 50px; height: 50px; border-radius: 50%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--accent-main); }
+        [data-theme="pastel"] .stat-icon { background: rgba(255,255,255,0.6); }
+        .stat-info h4 { font-size: 0.9rem; color: var(--text-muted); font-family: 'Inter', sans-serif; margin-bottom: 5px; font-weight: 400;}
+        .stat-info span { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+
+        /* Modern Order Items */
+        .data-list { display: flex; flex-direction: column; gap: 20px; }
+        .order-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+            backdrop-filter: blur(15px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .order-header {
+            padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;
+            align-items: center; background: rgba(0,0,0,0.1); font-size: 0.9rem;
+        }
+        [data-theme="pastel"] .order-header { background: rgba(255,255,255,0.3); }
+        .order-header-info span { color: var(--text-muted); margin-right: 15px; }
+        .order-header-info strong { color: var(--text-main); font-weight: 600; }
+        
+        .order-body { padding: 25px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;}
+        .order-product { display: flex; gap: 20px; align-items: center; }
+        .order-details h4 { font-family: 'Inter', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; color: var(--text-main);}
+        .order-details p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px; }
+        
+        .status-badge {
+            display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-delivered { background: rgba(76, 175, 80, 0.1); color: #4caf50; border: 1px solid #4caf50; }
+
+        /* Address Cards */
+        .address-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .address-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px;
+            backdrop-filter: blur(15px); position: relative;
+        }
+        .address-card h4 { font-family: 'Inter', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; color: var(--text-main); display: flex; justify-content: space-between;}
+        .address-badge { font-size: 0.7rem; background: var(--accent-main); color: var(--text-inverse); padding: 3px 8px; border-radius: 4px; vertical-align: middle;}
+        .address-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; }
+        .address-actions { display: flex; gap: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .address-actions a { color: var(--accent-sec); font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.3s; }
+        .address-actions a:hover { color: var(--accent-main); }
+        
+        .address-add-new {
+            border: 2px dashed var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-muted); cursor: pointer; transition: 0.3s; text-align: center; min-height: 200px;
+            background: rgba(0,0,0,0.05); border-radius: 12px;
+        }
+        [data-theme="pastel"] .address-add-new { background: rgba(255,255,255,0.2); }
+        .address-add-new i { font-size: 2rem; margin-bottom: 10px; color: var(--accent-main); }
+        .address-add-new:hover { border-color: var(--accent-main); color: var(--text-main); background: rgba(0,0,0,0.1); }
+
+        /* Settings Form */
+        .settings-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 35px; backdrop-filter: blur(15px); }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; font-weight: 500; color: var(--text-main); }
+        .form-control {
+            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 1rem; transition: 0.3s; outline: none;
+        }
+        [data-theme="pastel"] .form-control { background: rgba(255,255,255,0.6); color: #2b2533; border: 1px solid rgba(138, 90, 235, 0.3); }
+        .form-control:focus { border-color: var(--accent-main); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-box {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        .modal-box h3 { margin-bottom: 20px; font-family: 'Inter', sans-serif; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        textarea.form-control { resize: vertical; }
+
+        .btn-action {
+            padding: 10px 20px; border-radius: 6px; font-size: 0.9rem; font-weight: 500; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: 0.3s; text-align: center; border: 1px solid var(--accent-main);
+        }
+        .btn-primary { background: var(--accent-main); color: var(--text-inverse); }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-secondary { background: transparent; color: var(--accent-main); }
+        .btn-secondary:hover { background: rgba(0,0,0,0.1); }
+        [data-theme="pastel"] .btn-secondary:hover { background: rgba(255,255,255,0.4); }
+        .hidden { display: none !important; }
+
+        /* === FOOTER === */
+        footer { position: relative; z-index: 2; background: var(--bg-header); border-top: 1px solid var(--border); padding: 40px 4% 20px; color: var(--text-muted); transition: 0.5s; font-size: 0.85rem;}
+        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.75rem; font-weight: 300; opacity: 0.7;}
+
+        @media (max-width: 900px) { 
+            .dashboard-grid { grid-template-columns: 1fr; } 
+            .sidebar { display: flex; overflow-x: auto; padding: 10px; }
+            .nav-link { padding: 10px 15px; white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; }
+            .nav-link.active { border-left: none; border-bottom-color: var(--accent-main); }
+            .input-row { grid-template-columns: 1fr; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="dust-canvas"></canvas>
+
+    <header>
+        <div class="header-main">
+            <a href="index.html" class="brand"><i class="fas fa-book-reader"></i> Book<span>Wanderer</span></a>
+            
+            <div class="nav-icons" style="margin-left: auto; display: flex; gap: 20px; align-items: center;">
+                <a href="index.html" class="icon-item"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="sell.html" class="icon-item"><i class="fas fa-tag"></i><span>Sell Books</span></a>
+                <a href="checkout.html" class="icon-item"><i class="fas fa-shopping-bag"></i><span id="cart-count">Cart (0)</span></a>
+                <a href="account.html" class="icon-item active" id="auth-btn"><i class="fas fa-user-circle"></i><span>Account</span></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-section">
+        <div class="dashboard-header">
+            <div class="header-title-block">
+                <h2>Welcome back, <span id="user-display-name">Reader</span></h2>
+                <p>Manage your orders, saved addresses, and profile details.</p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-logout" onclick="clearCart()"><i class="fas fa-trash-alt"></i> Clear Cart</button>
+                <button class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="sidebar">
+                <a class="nav-link active" onclick="switchDashboardTab(event, 'overview')"><i class="fas fa-th-large"></i> Overview</a>
+                <a class="nav-link" onclick="switchDashboardTab(event, 'orders')"><i class="fas fa-box-open"></i> My Orders</a>
+                <a class="nav-link" onclick="switchDashboardTab(event, 'addresses')"><i class="fas fa-map-marker-alt"></i> Addresses</a>
+                <a class="nav-link" onclick="switchDashboardTab(event, 'settings')"><i class="fas fa-user-cog"></i> Profile Settings</a>
+            </div>
+
+            <div class="main-content">
+                
+                <div id="tab-overview" class="tab-content active">
+                    <h3 class="section-title">Dashboard Overview</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+                            <div class="stat-info">
+                                <h4>Total Orders</h4>
+                                <span id="stat-orders">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                            <div class="stat-info">
+                                <h4>Books Sold</h4>
+                                <span id="stat-books">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                            <div class="stat-info">
+                                <h4>Store Credit</h4>
+                                <span id="stat-credit">₹ 0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-box" style="padding: 25px;">
+                        <h4 style="margin-bottom: 15px; font-family: 'Inter', sans-serif;">Recent Activity</h4>
+                        <p id="recent-activity-text" style="color: var(--text-muted); font-size: 0.95rem;">Loading your recent activity...</p>
+                    </div>
+                </div>
+
+                <div id="tab-orders" class="tab-content">
+                    <h3 class="section-title">Order History</h3>
+                    <div class="data-list" id="orders-list">
+                        <p style="color: var(--text-muted);">Loading your history...</p>
+                    </div>
+                </div>
+
+                <div id="tab-addresses" class="tab-content">
+                    <h3 class="section-title">Saved Addresses</h3>
+                    
+                    <div class="address-grid" id="address-container">
+                        </div>
+                </div>
+
+                <div id="tab-settings" class="tab-content">
+                    <div class="settings-box">
+                        <h3 class="section-title">Profile Details</h3>
+                        
+                        <form onsubmit="event.preventDefault(); alert('Profile updated successfully!');">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label>First Name</label>
+                                    <input type="text" class="form-control" id="profile-fname" value="">
+                                </div>
+                                <div class="input-group">
+                                    <label>Last Name</label>
+                                    <input type="text" class="form-control" id="profile-lname" value="">
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Email Address</label>
+                                <input type="email" class="form-control" id="profile-email" value="" disabled style="opacity: 0.7; cursor: not-allowed;">
+                                <small style="color: var(--text-muted); margin-top: 5px; display: block;">Contact support to change your email address.</small>
+                            </div>
+                            
+                            <h4 style="margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-family: 'Inter', sans-serif;">Password Management</h4>
+                            
+                            <div class="input-group">
+                                <label>Current Password</label>
+                                <input type="password" class="form-control" placeholder="Enter current password">
+                            </div>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label>New Password</label>
+                                    <input type="password" class="form-control" placeholder="New password">
+                                </div>
+                                <div class="input-group">
+                                    <label>Confirm New Password</label>
+                                    <input type="password" class="form-control" placeholder="Confirm new password">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-action btn-primary" style="margin-top: 10px; padding: 12px 30px;">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="address-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="modal-title">Add New Address</h3>
+            <form id="address-form" onsubmit="saveAddress(event)">
+                <input type="hidden" id="addr-id" value="">
+                
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="addr-name" class="form-control" required placeholder="Who is receiving this?">
+                </div>
+                <div class="input-group">
+                    <label>Full Address (Flat, Street, Area)</label>
+                    <textarea id="addr-text" class="form-control" rows="3" required placeholder="e.g. Flat 402, Sunset Apartments..."></textarea>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>City/State</label>
+                        <input type="text" id="addr-city" class="form-control" required placeholder="Mumbai, Maharashtra">
+                    </div>
+                    <div class="input-group">
+                        <label>Pincode</label>
+                        <input type="text" id="addr-pin" class="form-control" required placeholder="400053">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="addr-phone" class="form-control" required placeholder="+91 98765 43210">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="submit" class="btn-action btn-primary" style="flex: 1;">Save Address</button>
+                    <button type="button" class="btn-action btn-secondary" style="flex: 1;" onclick="closeAddressModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-bottom">&copy; 2026 BookWanderer | Built for Book Lovers</div>
+    </footer>
+
+    <script>
+        let currentEmail = "";
+        let userAddresses = []; 
+
+        // === THEME ENGINE ===
+        function setTheme(themeName) {
+            if (themeName === 'default' || !themeName) { 
+                document.documentElement.removeAttribute('data-theme'); 
+            } else { 
+                document.documentElement.setAttribute('data-theme', themeName); 
+            }
+            localStorage.setItem('bookwanderer_theme', themeName);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('bookwanderer_theme') || 'default';
+            setTheme(savedTheme);
+        }
+        loadTheme();
+
+        // --- FIXED REAL-TIME CART COUNT ---
+        function updateCartCount() {
+            const cartData = localStorage.getItem('cart');
+            const cart = (cartData && cartData !== "undefined") ? JSON.parse(cartData) : [];
+            const countEl = document.getElementById('cart-count');
+            if(countEl) countEl.innerText = `Cart (${cart.length})`;
+        }
+
+        // === NEW CLEAR CART FUNCTION ===
+        function clearCart() {
+            localStorage.removeItem('cart');
+            updateCartCount();
+            alert("Cart has been cleared!");
+        }
+
+        function initDust() {
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const particles = [];
+            for(let i = 0; i < 70; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const theme = document.documentElement.getAttribute('data-theme');
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    if (theme === 'pink') ctx.fillStyle = `rgba(255, 133, 194, ${p.alpha})`;
+                    else if (theme === 'pastel') ctx.fillStyle = `rgba(162, 210, 255, ${p.alpha})`;
+                    else ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    ctx.fill();
+                });
+            }
+            animate();
+        }
+
+        async function loadRealUserData(email) {
+            try {
+                const ordersResponse = await fetch(`http://localhost:3000/user/orders/${email}`);
+                const ordersData = await ordersResponse.json();
+                const orders = ordersData.data || [];
+
+                const booksResponse = await fetch(`http://localhost:3000/user/books/${email}`);
+                const booksData = await booksResponse.json();
+                const books = booksData.data || [];
+
+                document.getElementById('stat-orders').innerText = orders.length;
+                document.getElementById('stat-books').innerText = books.length;
+                document.getElementById('stat-credit').innerText = '₹ 0'; 
+
+                if (orders.length > 0) {
+                    const latestDate = new Date(orders[0].date).toLocaleDateString();
+                    document.getElementById('recent-activity-text').innerHTML = `You successfully placed an order on <strong>${latestDate}</strong> for ₹ ${orders[0].total_amount}.`;
+                } else {
+                    document.getElementById('recent-activity-text').innerText = "No recent activity yet. Start exploring the library!";
+                }
+
+                const ordersContainer = document.getElementById('orders-list');
+                ordersContainer.innerHTML = ''; 
+
+                if (orders.length === 0) {
+                    ordersContainer.innerHTML = '<p style="color: var(--text-muted);">You have not placed any orders yet.</p>';
+                } else {
+                    // NEW: Updated block to handle dynamic book images in the order history
+                    orders.forEach(order => {
+                        let itemsStr = "Multiple Items";
+                        let bookImageHtml = `
+                            <div style="width: 70px; height: 100px; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--border);">
+                                <i class="fas fa-book" style="font-size: 2rem; color: var(--accent-sec);"></i>
+                            </div>`;
+
+                        try {
+                            const parsedItems = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+                            if(parsedItems && parsedItems.length > 0) {
+                                itemsStr = parsedItems.map(i => i.title).join(', ');
+                                if (parsedItems[0].image) { 
+                                    bookImageHtml = `<img src="${parsedItems[0].image}" alt="Book Cover" style="width: 70px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);">`;
+                                }
+                            }
+                        } catch(e) {}
+                        
+                        const dateStr = new Date(order.date).toLocaleDateString();
+                        
+                        ordersContainer.innerHTML += `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-header-info">
+                                    <span>Order Placed: <strong>${dateStr}</strong></span>
+                                    <span>Total: <strong>₹ ${order.total_amount}</strong></span>
+                                </div>
+                                <div>Order #${order.id}</div>
+                            </div>
+                            <div class="order-body">
+                                <div class="order-product">
+                                    ${bookImageHtml}
+                                    <div class="order-details">
+                                        <h4>${itemsStr}</h4>
+                                        <p>Order Confirmed by Library</p>
+                                        <span class="status-badge status-delivered">Confirmed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching real data:", error);
+                document.getElementById('orders-list').innerHTML = '<p style="color: #ff4c4c;">Error connecting to the Imperial Archive database.</p>';
+            }
+        }
+
+        async function fetchAddresses() {
+            try {
+                const response = await fetch(`http://localhost:3000/addresses/${currentEmail}`);
+                const result = await response.json();
+                userAddresses = result.data || [];
+                renderAddressesUI();
+            } catch (err) { console.error(err); }
+        }
+
+        function renderAddressesUI() {
+            const container = document.getElementById('address-container');
+            let html = userAddresses.map((addr, index) => `
+                <div class="address-card">
+                    <h4>${addr.name} ${index === 0 ? '<span class="address-badge">Default</span>' : ''}</h4>
+                    <p>${addr.address_text}<br>${addr.city}<br>Pincode: ${addr.pin}<br>Phone: ${addr.phone}</p>
+                    <div class="address-actions">
+                        <a onclick="openAddressModal(${addr.id})">Edit</a>
+                        <a onclick="deleteAddress(${addr.id})">Remove</a>
+                    </div>
+                </div>`).join('');
+            html += `<div class="address-add-new" onclick="openAddressModal()"><i class="fas fa-plus-circle"></i><p>Add New Address</p></div>`;
+            container.innerHTML = html;
+        }
+
+        function openAddressModal(id = null) {
+            const modal = document.getElementById('address-modal');
+            const title = document.getElementById('modal-title');
+            if (id !== null) {
+                title.innerText = "Edit Address";
+                const addr = userAddresses.find(a => a.id === id);
+                document.getElementById('addr-id').value = id;
+                document.getElementById('addr-name').value = addr.name;
+                document.getElementById('addr-text').value = addr.address_text;
+                document.getElementById('addr-city').value = addr.city;
+                document.getElementById('addr-pin').value = addr.pin;
+                document.getElementById('addr-phone').value = addr.phone;
+            } else {
+                title.innerText = "Add New Address";
+                document.getElementById('address-form').reset();
+                document.getElementById('addr-id').value = "";
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeAddressModal() { document.getElementById('address-modal').classList.add('hidden'); }
+
+        async function saveAddress(e) {
+            e.preventDefault();
+            const payload = {
+                user_email: currentEmail,
+                name: document.getElementById('addr-name').value,
+                address_text: document.getElementById('addr-text').value,
+                city: document.getElementById('addr-city').value,
+                pin: document.getElementById('addr-pin').value,
+                phone: document.getElementById('addr-phone').value
+            };
+            const id = document.getElementById('addr-id').value;
+            try {
+                const method = id !== "" ? 'PUT' : 'POST';
+                const url = id !== "" ? `http://localhost:3000/addresses/${id}` : 'http://localhost:3000/addresses';
+                await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                closeAddressModal(); fetchAddresses();
+            } catch (err) { alert("Could not save address to the server."); }
+        }
+
+        async function deleteAddress(id) {
+            if(confirm("Are you sure?")) {
+                try {
+                    await fetch(`http://localhost:3000/addresses/${id}`, { method: 'DELETE' });
+                    fetchAddresses();
+                } catch (err) { console.error(err); }
+            }
+        }
+
+        function checkAuth() {
+            const userData = localStorage.getItem('user');
+            if (!userData) { window.location.href = 'login.html'; return; }
+            const user = JSON.parse(userData);
+            currentEmail = user.email; 
+            if (user.email === 'book.wanderer13@gmail.com') { window.location.href = 'admin.html'; return; }
+            document.getElementById('user-display-name').innerText = user.name || "Reader";
+            const nameParts = user.name ? user.name.split(' ') : ["Reader", ""];
+            document.getElementById('profile-fname').value = nameParts[0] || "";
+            document.getElementById('profile-lname').value = nameParts[1] || "";
+            document.getElementById('profile-email').value = user.email || "";
+            loadRealUserData(user.email);
+            fetchAddresses();
+        }
+
+        function logoutUser() { localStorage.removeItem('user'); window.location.href = 'index.html'; }
+
+        function switchDashboardTab(e, tabId) {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            if (e) e.currentTarget.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        window.onload = () => { 
+            initDust();
+            updateCartCount(); 
+            checkAuth();
+        };
+    </script>
+</body>
+</html>

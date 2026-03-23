@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details | BookWanderer</title>
+    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('bookwanderer_theme');
+            if (savedTheme && savedTheme !== 'default') {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        })();
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* === DYNAMIC THEME VARIABLES === */
+        :root {
+            --bg-overlay: rgba(31, 20, 18, 0.92); --bg-panel: rgba(42, 28, 26, 0.8); --bg-header: rgba(31, 20, 18, 0.98);
+            --card-bg: rgba(42, 28, 26, 0.7); --accent-main: #d4af37; --accent-sec: #c17f59; --text-main: #f4ebd8; 
+            --text-muted: #e0d0c1; --text-inverse: #1f1412; --border: rgba(193, 127, 89, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pink"] {
+            --bg-overlay: rgba(18, 18, 20, 0.95); --bg-panel: rgba(30, 25, 30, 0.8); --bg-header: rgba(15, 15, 18, 0.98);
+            --card-bg: rgba(25, 20, 25, 0.8); --accent-main: #ff47a3; --accent-sec: #ff85c2; --text-main: #ffffff; 
+            --text-muted: #d1b8c4; --text-inverse: #121212; --border: rgba(255, 71, 163, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1618220179428-22790b46a0eb?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pastel"] {
+            --bg-overlay: linear-gradient(135deg, rgba(255, 175, 204, 0.82), rgba(162, 210, 255, 0.82)); 
+            --bg-panel: rgba(255, 255, 255, 0.45); --bg-header: rgba(255, 255, 255, 0.85); --card-bg: rgba(255, 255, 255, 0.55);
+            --accent-main: #8a5aeb; --accent-sec: #ff7aa2; --text-main: #2b2533; --text-muted: #575061;
+            --text-inverse: #ffffff; --border: rgba(255, 175, 204, 0.6); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        /* === CORE STYLES === */
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body { background-image: var(--theme-bg-image); background-size: cover; background-position: center; background-attachment: fixed; font-family: 'Inter', sans-serif; font-weight: 300; color: var(--text-main); overflow-x: hidden; transition: background-image 0.5s ease-in-out; position: relative; }
+        body::before { content: ''; position: fixed; inset: 0; background: var(--bg-overlay); z-index: -1; backdrop-filter: blur(8px); }
+        #dust-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.15; mix-blend-mode: screen; }
+        h1, h2, h3, h4, .brand { font-family: 'Cinzel', serif; font-weight: 400; letter-spacing: 1px; color: var(--text-main); }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+
+        header { position: sticky; top: 0; z-index: 1000; background: var(--bg-header); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .header-main { padding: 15px 4%; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+        .brand { font-size: 1.6rem; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .brand span { color: var(--accent-main); }
+        .nav-icons { display: flex; gap: 25px; align-items: center; }
+        .icon-item { color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 5px; cursor: pointer; transition: 0.3s; }
+        .icon-item:hover { color: var(--accent-main); transform: translateY(-2px); }
+        .icon-item i { font-size: 1.1rem; color: var(--text-main); }
+
+        /* === E-COMMERCE PRODUCT LAYOUT === */
+        .page-wrapper { padding: 40px 4%; position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; }
+        
+        .breadcrumb { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
+        .breadcrumb a { color: var(--accent-main); }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* Top 3-Column Section */
+        .product-top-grid { 
+            display: grid; 
+            grid-template-columns: 240px 1fr 320px; 
+            gap: 40px; 
+            margin-bottom: 50px; 
+            align-items: start;
+        }
+
+        /* Col 1: Cover Image */
+        .product-image-container { 
+            text-align: center; 
+            padding: 20px 10px; 
+        }
+        .product-image-container img { 
+            width: 100%; 
+            max-width: 220px; 
+            aspect-ratio: 2/3; 
+            object-fit: cover; 
+            border-radius: 6px; 
+            border: 2px solid var(--accent-main); 
+            box-shadow: 0 0 25px var(--accent-main), 0 15px 35px rgba(0,0,0,0.6); 
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: crosshair;
+        }
+        .product-image-container img:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 0 45px var(--accent-main), 0 25px 45px rgba(0,0,0,0.8);
+            border-color: var(--text-main);
+        }
+
+        /* Col 2: Main Info */
+        .product-main-info { display: flex; flex-direction: column; gap: 15px; }
+        .product-title { font-size: 2.5rem; line-height: 1.2; margin: 0; }
+        .product-author { font-size: 1.1rem; color: var(--accent-sec); }
+        
+        .product-ratings { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-muted); padding-bottom: 15px; border-bottom: 1px solid var(--border);}
+        .stars { color: #FFD700; font-size: 1rem; }
+        
+        .product-formats { display: flex; gap: 15px; margin-top: 10px; }
+        .format-box { 
+            border: 1px solid var(--accent-main); padding: 10px 15px; border-radius: 6px; 
+            background: rgba(212, 175, 55, 0.05); text-align: center; cursor: pointer;
+        }
+        .format-box span { display: block; font-size: 0.8rem; color: var(--text-muted); }
+        .format-box strong { font-size: 1rem; color: var(--text-main); font-weight: 600; }
+
+        .product-description { font-size: 1rem; line-height: 1.6; font-weight: 300; margin-top: 15px; color: var(--text-main); }
+        .product-description p { margin-bottom: 15px; }
+
+        /* Col 3: Buy Box (Action Panel) */
+        .action-box { 
+            background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; 
+            padding: 25px; backdrop-filter: blur(10px); box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .action-price { font-size: 2rem; font-weight: 700; color: var(--accent-main); margin-bottom: 15px; font-family: 'Inter', sans-serif;}
+        .stock-status { color: #4caf50; font-size: 0.9rem; font-weight: 500; margin-bottom: 20px; }
+        
+        .btn-action { 
+            width: 100%; padding: 12px; border-radius: 30px; font-family: 'Inter', sans-serif; 
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.3s; margin-bottom: 10px; text-transform: uppercase;
+        }
+        .btn-add-cart { background: var(--accent-main); color: var(--text-inverse); border: none; }
+        .btn-add-cart:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-buy-now { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-buy-now:hover { border-color: var(--accent-main); color: var(--accent-main); }
+        
+        .secure-tx { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* === LOWER SECTIONS === */
+        .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+        .section-header { font-size: 1.4rem; margin-bottom: 20px; font-weight: 600; }
+        
+        /* Universal grid for Related AND Recent books */
+        .related-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; 
+        }
+        .related-card { text-align: left; text-decoration: none; color: inherit; transition: 0.3s; display: block; padding: 10px;}
+        .related-card:hover { transform: translateY(-5px); }
+        
+        .related-card img { 
+            width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px; 
+            margin-bottom: 10px; border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        .related-card:hover img {
+            border-color: var(--accent-main);
+            box-shadow: 0 0 15px var(--accent-main), 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .related-card h4 { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500; line-height: 1.3; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .related-card .stars { font-size: 0.75rem; margin-bottom: 5px; }
+        .related-card .r-price { color: var(--accent-main); font-weight: 600; font-size: 0.9rem; }
+
+        /* Product Details List */
+        .details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 600px; font-size: 0.9rem; }
+        .details-list div { display: flex; }
+        .details-list span:first-child { width: 140px; color: var(--text-muted); font-weight: 500; }
+        .details-list span:last-child { color: var(--text-main); }
+
+        /* Author Section */
+        .author-box { display: flex; gap: 20px; align-items: center; margin-top: 20px; }
+        .author-avatar { width: 80px; height: 80px; border-radius: 50%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--text-muted); }
+
+        footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); position: relative; z-index: 2; background: var(--bg-header);}
+
+        /* CUSTOM TOAST */
+        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 15px; }
+        .theme-toast { background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main); padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 15px; backdrop-filter: blur(15px); transform: translateX(120%); opacity: 0; transition: all 0.4s ease; }
+        .theme-toast.show { transform: translateX(0); opacity: 1; }
+        .theme-toast i { font-size: 1.5rem; color: var(--accent-main); }
+
+        @media (max-width: 900px) {
+            .product-top-grid { grid-template-columns: 1fr; }
+            .product-image-container img { max-width: 250px; }
+            .action-box { position: static; }
+            .details-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="dust-canvas"></canvas>
+
+    <header>
+        <div class="header-main">
+            <a href="index.html" class="brand"><i class="fas fa-book-reader"></i> Book<span>Wanderer</span></a>
+            <div class="nav-icons">
+                <a href="index.html" class="icon-item"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="sell.html" class="icon-item"><i class="fas fa-tag"></i><span>Sell Books</span></a>
+                <a href="checkout.html" class="icon-item"><i class="fas fa-shopping-bag"></i><span id="cart-count">Cart (0)</span></a>
+                <a href="login.html" class="icon-item" id="auth-btn"><i class="fas fa-user"></i><span>Login</span></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-wrapper" id="content-wrapper">
+        <p style="text-align: center; margin-top: 100px;">Consulting the Archives...</p>
+    </div>
+
+    <footer>
+        &copy; 2026 BookWanderer | Built for Book Lovers
+    </footer>
+
+    <div id="toast-container"></div>
+
+    <script>
+        const API_URL = "http://localhost:3000";
+        let currentBook = null;
+        let allBooksCache = [];
+
+        function initDust() {
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const particles = [];
+            for(let i=0; i<70; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, radius: Math.random()*2+0.5, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, alpha: Math.random()*0.5+0.2 });
+            function animate() {
+                requestAnimationFrame(animate); ctx.clearRect(0,0,canvas.width,canvas.height);
+                const theme = document.documentElement.getAttribute('data-theme');
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                    if (theme === 'pink') ctx.fillStyle = `rgba(255, 133, 194, ${p.alpha})`;
+                    else if (theme === 'pastel') ctx.fillStyle = `rgba(162, 210, 255, ${p.alpha})`;
+                    else ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    ctx.fill();
+                });
+            }
+            animate();
+        }
+
+        function updateCartCount() {
+            const userJSON = localStorage.getItem('user');
+            const countEl = document.getElementById('cart-count');
+            if (!userJSON) { countEl.innerText = `Cart (0)`; return; }
+            const user = JSON.parse(userJSON);
+            fetch(`${API_URL}/cart/${user.email}`)
+                .then(res => res.json())
+                .then(data => { countEl.innerText = `Cart (${data.cart_data ? data.cart_data.length : 0})`; })
+                .catch(() => { countEl.innerText = `Cart (0)`; });
+        }
+
+        function checkUserStatus() {
+            const userData = localStorage.getItem('user');
+            const authBtn = document.getElementById('auth-btn');
+            if (userData && authBtn) {
+                const user = JSON.parse(userData);
+                if (user.email === 'book.wanderer13@gmail.com') {
+                    authBtn.href = "admin.html"; authBtn.innerHTML = `<i class="fas fa-cog"></i><span>Dashboard</span>`;
+                } else {
+                    authBtn.href = "account.html"; authBtn.innerHTML = `<i class="fas fa-user-circle"></i><span>Account</span>`;
+                }
+                authBtn.style.color = "var(--accent-main)";
+            }
+        }
+
+        function showThemeToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `theme-toast`;
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        async function loadPageData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            const wrapper = document.getElementById('content-wrapper');
+
+            if (!bookId) {
+                wrapper.innerHTML = `<div style="text-align:center;"><p>No book ID provided.</p><a href="index.html" style="color:var(--accent-main)">Return to Library</a></div>`;
+                return;
+            }
+
+            try {
+                // Fetch all books
+                const response = await fetch(`${API_URL}/books`);
+                const result = await response.json();
+                allBooksCache = result.data;
+                
+                currentBook = allBooksCache.find(b => b.id == bookId);
+
+                if (!currentBook) {
+                    wrapper.innerHTML = `<div style="text-align:center;"><p>Book not found in archives.</p><br><a href="index.html" style="color:var(--accent-main)">Return to Library</a></div>`;
+                    return;
+                }
+
+                // === 1. RELATED BOOKS LOGIC ===
+                const relatedBooks = allBooksCache.filter(b => b.category === currentBook.category && b.id != currentBook.id).slice(0, 5);
+                let relatedHtml = '';
+                if (relatedBooks.length > 0) {
+                    relatedHtml = relatedBooks.map(b => `
+                        <a href="book-details.html?id=${b.id}" class="related-card">
+                            <img src="${b.image}" alt="${b.title}">
+                            <h4>${b.title}</h4>
+                            <div class="stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div class="r-price">₹ ${b.price}</div>
+                        </a>
+                    `).join('');
+                } else {
+                    relatedHtml = `<p style="color: var(--text-muted); font-size: 0.9rem;">No other related items found in this archive sector.</p>`;
+                }
+
+                // === 2. RECENTLY VIEWED LOGIC ===
+                let recentIds = JSON.parse(localStorage.getItem('bookwanderer_recent') || '[]');
+                
+                // Remove current book if it's already there (so we can bump it to the front)
+                recentIds = recentIds.filter(id => id != currentBook.id);
+                // Add current book to the front
+                recentIds.unshift(currentBook.id);
+                // Keep only the last 6 books
+                if (recentIds.length > 6) recentIds.pop();
+                
+                // Save updated list back to localStorage
+                localStorage.setItem('bookwanderer_recent', JSON.stringify(recentIds));
+
+                // Generate HTML for recent books (excluding the one we are currently looking at)
+                const booksToShowIds = recentIds.filter(id => id != currentBook.id);
+                let recentHtml = '';
+                
+                if (booksToShowIds.length > 0) {
+                    const recentBooksData = booksToShowIds.map(id => allBooksCache.find(b => b.id == id)).filter(b => b); // filter out any nulls
+                    recentHtml = recentBooksData.map(b => `
+                        <a href="book-details.html?id=${b.id}" class="related-card">
+                            <img src="${b.image}" alt="${b.title}">
+                            <h4>${b.title}</h4>
+                            <div class="stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div class="r-price">₹ ${b.price}</div>
+                        </a>
+                    `).join('');
+                } else {
+                    recentHtml = `<p style="color: var(--text-muted); font-size: 0.9rem;">Your browsing history is empty. Keep exploring!</p>`;
+                }
+
+                // === 3. BUILD THE PAGE ===
+                wrapper.innerHTML = `
+                    <div class="breadcrumb">
+                        <a href="index.html">Library Catalog</a> &rsaquo; 
+                        <span style="text-transform: capitalize;">${currentBook.category}</span> &rsaquo; 
+                        ${currentBook.title}
+                    </div>
+
+                    <div class="product-top-grid">
+                        
+                        <div class="product-image-container">
+                            <img src="${currentBook.image}" alt="${currentBook.title}">
+                            <div style="margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);"><i class="fas fa-search-plus"></i> Hover to inspect artifact</div>
+                        </div>
+
+                        <div class="product-main-info">
+                            <h1 class="product-title">${currentBook.title}</h1>
+                            <div class="product-author">by <a href="#" style="color: var(--accent-main); text-decoration: underline;">${currentBook.author}</a> (Author)</div>
+                            
+                            <div class="product-ratings">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
+                                <span>4.9</span>
+                                <span>(1,402 ratings)</span>
+                            </div>
+
+                            <div class="product-formats">
+                                <div class="format-box" style="border-color: var(--accent-main); background: rgba(212, 175, 55, 0.1);">
+                                    <span>Library Edition</span>
+                                    <strong>₹ ${currentBook.price}</strong>
+                                </div>
+                            </div>
+
+                            <div class="product-description">
+                                <p><strong>Winner of the Imperial Archive Excellence Award.</strong></p>
+                                <p>Dive deep into the brilliant mind of ${currentBook.author}. This edition has been meticulously verified for quality, ensuring an exceptional reading experience free from digital distractions.</p>
+                                <p>Whether you are a scholar, an enthusiast, or a casual wanderer, this text serves as a fundamental pillar to your personal collection.</p>
+                                <a href="#" style="color: var(--accent-main); font-weight: 500; font-size: 0.9rem;"><i class="fas fa-chevron-down"></i> Read more</a>
+                            </div>
+                        </div>
+
+                        <div class="action-box">
+                            <div class="action-price">₹ ${currentBook.price}</div>
+                            <div class="stock-status">Available in Archives</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                                <i class="fas fa-map-marker-alt"></i> Deliver to local address
+                            </div>
+                            
+                            <button class="btn-action btn-add-cart" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                            <button class="btn-action btn-buy-now" onclick="buyNow()">Buy Now</button>
+                            
+                            <div class="secure-tx">
+                                <i class="fas fa-lock"></i> Secure transaction
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 15px;">
+                                Sold by: BookWanderer Official<br>
+                                Ships from: Central Library Vault
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h3 class="section-header">Related products from archives</h3>
+                    <div class="related-grid">
+                        ${relatedHtml}
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h3 class="section-header">Product details</h3>
+                    <div class="details-list">
+                        <div><span>Archive ID :</span><span>BW-${currentBook.id}00${Math.floor(Math.random() * 99)}</span></div>
+                        <div><span>Publisher :</span><span>Imperial Press Institute</span></div>
+                        <div><span>Language :</span><span>English</span></div>
+                        <div><span>Format :</span><span>Physical (Hardcover/Paperback)</span></div>
+                        <div><span>Item Weight :</span><span>450 g (approx)</span></div>
+                        <div><span>Dimensions :</span><span>20 x 14 x 3 cm</span></div>
+                        <div><span>Best Sellers Rank :</span><span>#${Math.floor(Math.random() * 50) + 1} in ${currentBook.category}</span></div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h3 class="section-header">About the author</h3>
+                    <div class="author-box">
+                        <div class="author-avatar"><i class="fas fa-user-tie"></i></div>
+                        <div>
+                            <h4 style="font-size: 1.1rem; margin-bottom: 5px; color: var(--accent-main);">${currentBook.author}</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">Discover more books by the author, see similar authors, and read historical insights regarding their works in the grand library.</p>
+                            <button style="margin-top: 10px; padding: 6px 15px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--text-main); font-size: 0.8rem; cursor: pointer;">Follow Author</button>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h3 class="section-header">Your recent history</h3>
+                    <div class="related-grid">
+                        ${recentHtml}
+                    </div>
+
+                `;
+
+            } catch (err) {
+                wrapper.innerHTML = `<p style="text-align:center">Error connecting to the database.</p>`;
+            }
+        }
+
+        async function addToCart() {
+            if (!currentBook) return;
+            const userJSON = localStorage.getItem('user');
+            
+            if (!userJSON) {
+                alert("Please sign in to add items to your cart.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userJSON);
+
+            try {
+                const getRes = await fetch(`${API_URL}/cart/${user.email}`);
+                const getData = await getRes.json();
+                let serverCart = getData.cart_data || [];
+
+                serverCart.push({ 
+                    id: currentBook.id, title: currentBook.title, price: currentBook.price, image: currentBook.image, author: currentBook.author
+                });
+
+                const postRes = await fetch(`${API_URL}/cart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_email: user.email, cart_data: serverCart })
+                });
+
+                if (postRes.ok) {
+                    showThemeToast(`"${currentBook.title}" added to your cart!`);
+                    updateCartCount();
+                }
+            } catch (err) {
+                alert("Could not sync with the library vault.");
+            }
+        }
+
+        function buyNow() {
+            addToCart().then(() => {
+                const userJSON = localStorage.getItem('user');
+                if (userJSON) {
+                    window.location.href = 'checkout.html';
+                }
+            });
+        }
+
+        window.onload = () => { 
+            initDust(); 
+            checkUserStatus(); 
+            updateCartCount(); 
+            loadPageData(); 
+        };
+    </script>
+</body>
+</html>

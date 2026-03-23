@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookWanderer | Library Collection</title>
+    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('bookwanderer_theme');
+            if (savedTheme && savedTheme !== 'default') {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        })();
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* === DYNAMIC THEME VARIABLES === */
+        :root {
+            --bg-overlay: rgba(31, 20, 18, 0.92); 
+            --bg-panel: rgba(42, 28, 26, 0.8); 
+            --bg-header: rgba(31, 20, 18, 0.98);
+            --card-bg: rgba(42, 28, 26, 0.7);
+            --accent-main: #d4af37; 
+            --accent-sec: #c17f59; 
+            --accent-btn: #8a4b38; 
+            --text-main: #f4ebd8; 
+            --text-muted: #e0d0c1;
+            --text-inverse: #1f1412;
+            --border: rgba(193, 127, 89, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop');
+            --hero-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1600&auto=format&fit=crop');
+        }
+
+        [data-theme="pink"] {
+            --bg-overlay: rgba(18, 18, 20, 0.95); 
+            --bg-panel: rgba(30, 25, 30, 0.8); 
+            --bg-header: rgba(15, 15, 18, 0.98);
+            --card-bg: rgba(25, 20, 25, 0.8);
+            --accent-main: #ff47a3; 
+            --accent-sec: #ff85c2; 
+            --accent-btn: #d6227a; 
+            --text-main: #ffffff; 
+            --text-muted: #d1b8c4;
+            --text-inverse: #121212;
+            --border: rgba(255, 71, 163, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1618220179428-22790b46a0eb?q=80&w=2000&auto=format&fit=crop');
+            --hero-image: url('https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?q=80&w=1600&auto=format&fit=crop');
+        }
+
+        [data-theme="pastel"] {
+            --bg-overlay: linear-gradient(135deg, rgba(255, 175, 204, 0.82), rgba(162, 210, 255, 0.82)); 
+            --bg-panel: rgba(255, 255, 255, 0.45); 
+            --bg-header: rgba(255, 255, 255, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.55);
+            --accent-main: #8a5aeb; 
+            --accent-sec: #ff7aa2; 
+            --accent-btn: #5baae6; 
+            --text-main: #2b2533; 
+            --text-muted: #575061;
+            --text-inverse: #ffffff;
+            --border: rgba(255, 175, 204, 0.6); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+            --hero-image: url('https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1600&auto=format&fit=crop');
+        }
+
+        /* === CORE STYLES === */
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body { background-image: var(--theme-bg-image); background-size: cover; background-position: center; background-attachment: fixed; font-family: 'Inter', sans-serif; font-weight: 300; color: var(--text-main); overflow-x: hidden; transition: background-image 0.5s ease-in-out; position: relative; }
+        body::before { content: ''; position: fixed; inset: 0; background: var(--bg-overlay); z-index: -1; backdrop-filter: blur(8px); }
+        #dust-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.15; mix-blend-mode: screen; }
+        h1, h2, h3, .brand { font-family: 'Cinzel', serif; font-weight: 400; letter-spacing: 1px; color: var(--text-main); }
+        .serif { font-family: 'Playfair Display', serif; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+
+        header { position: sticky; top: 0; z-index: 1000; background: var(--bg-header); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.5s;}
+        .header-main { padding: 15px 4%; display: flex; align-items: center; justify-content: space-between; gap: 30px; position: relative; z-index: 10; }
+        .brand { font-size: 1.6rem; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .brand span { color: var(--accent-main); }
+
+        .search-box { width: 100%; display: flex; background: transparent; border-radius: 30px; overflow: hidden; max-width: 400px; border: 1px solid var(--border); transition: 0.5s; }
+        .search-box input { flex: 1; border: none; padding: 10px 20px; color: var(--text-main); font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.95rem; outline: none; background: rgba(255,255,255,0.05); }
+        .search-box button { background: transparent; border: none; padding: 0 20px; color: var(--accent-main); cursor: pointer; transition: 0.3s; }
+
+        .nav-icons { display: flex; gap: 25px; align-items: center; }
+        .icon-item { color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 5px; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.5px;}
+        .icon-item:hover { color: var(--accent-main); transform: translateY(-2px); }
+        .icon-item i { font-size: 1.1rem; color: var(--text-main); }
+
+        .theme-switcher { display: flex; gap: 10px; padding-left: 15px; border-left: 1px solid var(--border); }
+        .theme-btn { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid var(--text-main); transition: 0.3s; opacity: 0.7;}
+        .theme-btn:hover { transform: scale(1.2); opacity: 1;}
+        .btn-default { background: #d4af37; }
+        .btn-pink { background: #ff47a3; }
+        .btn-pastel { background: linear-gradient(135deg, #ffafcc, #a2d2ff); border: none;}
+
+        .cat-nav { border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: center; gap: 40px; padding: 12px 0; background: var(--bg-panel); flex-wrap: wrap; transition: 0.5s;}
+        .cat-link { color: var(--text-main); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 400; opacity: 0.8; transition: 0.3s; cursor: pointer; }
+        .cat-link:hover { color: var(--accent-main); opacity: 1; }
+
+        /* === HERO SECTION === */
+        .hero-section { padding: 30px 4%; position: relative; z-index: 2; transition: all 0.5s ease; overflow: hidden; }
+        .hero-container { position: relative; height: 450px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .slide { position: absolute; inset: 0; background-image: var(--hero-image); background-size: cover; background-position: center; opacity: 0; transition: 1s; display: flex; flex-direction: column; justify-content: center; padding-left: 60px; }
+        .slide.active { opacity: 1; z-index: 1; }
+        .slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg-overlay) 0%, rgba(0,0,0,0.1) 70%, transparent 100%); }
+        .slide-content { position: relative; z-index: 2; max-width: 600px; display: flex; flex-direction: column; gap: 18px; align-items: flex-start; }
+        
+        .slide h2 { font-size: 3.4rem; margin: 0; line-height: 1.1; font-weight: 700;} 
+        .slide h2 span { color: var(--accent-main); font-style: italic; font-family: 'Playfair Display', serif; font-weight: 600;}
+        
+        .btn-hero { padding: 12px 30px; background: transparent; color: var(--text-main); font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; border-radius: 30px; border: 1px solid var(--border); text-decoration: none; transition: 0.3s; font-family: 'Inter', sans-serif;}
+        .btn-hero:hover { background: var(--accent-main); color: var(--text-inverse); border-color: var(--accent-main); }
+
+        .sigil-row { position: relative; z-index: 2; display: flex; gap: 40px; justify-content: center; padding: 40px 4%; flex-wrap: wrap; border-bottom: 1px solid var(--border); background: var(--bg-panel); transition: all 0.5s ease; }
+        .sigil { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; min-width: 70px; transition: 0.3s; opacity: 0.8; font-weight: 400; font-size: 0.9rem;}
+        .sigil:hover { transform: translateY(-5px); color: var(--accent-main); opacity: 1;}
+        .sigil-circle { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); transition: 0.5s;}
+        .sigil:hover .sigil-circle { border-color: var(--accent-main); color: var(--accent-main);}
+
+        /* === NEW 3D VAULT SLIDER (NO BACKGROUND BLOCKS) === */
+        .vault-section {
+            position: relative; padding: 0; background: transparent;
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; 
+            min-height: 500px; overflow: hidden; z-index: 2;
+            perspective: 1500px; transition: all 0.5s ease;
+        }
+        
+        .vault-slide {
+            position: absolute; inset: 0; padding: 80px 8%;
+            display: flex; align-items: center; gap: 80px; 
+            opacity: 0; visibility: hidden; 
+            transition: opacity 0.8s ease, visibility 0.8s;
+            z-index: 1; transform-style: preserve-3d;
+        }
+        
+        .vault-slide.active { opacity: 1; visibility: visible; z-index: 2; }
+        
+        .vault-content { 
+            flex: 1; transform: translateZ(-200px) rotateY(-20deg) translateX(-50px); 
+            opacity: 0; transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s; 
+        }
+        .vault-slide.active .vault-content { transform: translateZ(0) rotateY(0) translateX(0); opacity: 1; }
+        
+        .vault-content h4 { color: var(--accent-main); font-family: 'Inter'; font-weight: 500; letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 15px; text-transform: uppercase;}
+        .vault-content h2 { font-size: 2.8rem; margin-bottom: 15px; text-transform: uppercase; font-family: 'Cinzel', serif; letter-spacing: 1px;}
+        .vault-content h2 span { color: var(--accent-sec); font-style: italic; font-family: 'Playfair Display', serif; text-transform: none;}
+        .vault-content p { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; font-weight: 300; max-width: 500px;}
+        
+        .vault-image-container { 
+            flex: 1; display: flex; justify-content: center; align-items: center; 
+            transform: translateZ(-300px) rotateY(30deg) translateX(50px); 
+            opacity: 0; transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s; 
+            transform-style: preserve-3d;
+        }
+        .vault-slide.active .vault-image-container { transform: translateZ(0) rotateY(0) translateX(0); opacity: 1; }
+
+        .book-3d-wrapper { perspective: 1000px; transform-style: preserve-3d; padding: 20px; }
+        .book-3d-wrapper img {
+            width: 200px; height: 300px; object-fit: cover; border-radius: 4px;
+            box-shadow: -20px 20px 40px rgba(0,0,0,0.6); transform: rotateY(-20deg) translateZ(30px);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .vault-image-container:hover .book-3d-wrapper img {
+            transform: rotateY(0deg) translateZ(60px) scale(1.05); box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            border-color: var(--accent-main);
+        }
+
+        .vault-controls { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 10; }
+        .vault-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--accent-main); background: transparent; cursor: pointer; transition: 0.3s; }
+        .vault-dot:hover { background: rgba(212, 175, 55, 0.3); }
+        .vault-dot.active { background: var(--accent-main); transform: scale(1.2); box-shadow: 0 0 10px var(--accent-main); }
+
+
+        /* === SHELF GRID === */
+        .shelf-wrapper { position: relative; z-index: 2; padding: 60px 4%; }
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 40px 25px; }
+        .book-card { position: relative; background: transparent; padding: 10px; transition: 0.4s; }
+        .book-card:hover { transform: translateY(-5px); }
+        
+        .cover-box { position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid var(--border);}
+        .cover-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; opacity: 0.95;}
+        .book-card:hover .cover-box img { transform: scale(1.03); opacity: 1;}
+
+        .btn-action { position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: var(--bg-header); border: none; font-weight: 400; font-family: 'Inter', sans-serif; font-size: 0.8rem; cursor: pointer; transform: translateY(100%); transition: 0.3s; color: var(--accent-main); border-top: 1px solid var(--border);}
+        .cover-box:hover .btn-action { transform: translateY(0); }
+
+        .book-info { padding-top: 15px; text-align: center; }
+        .book-info h3 { font-size: 1.05rem; margin-bottom: 4px; font-family: 'Playfair Display', serif; font-weight: 400;}
+        .book-info p { font-size: 0.8rem; color: var(--text-muted); font-weight: 300; margin-bottom: 6px;}
+        .price { color: var(--accent-main); font-weight: 500; font-size: 0.9rem; font-family: 'Inter', sans-serif;}
+
+        .load-more-container { display: flex; justify-content: center; padding: 60px 0; }
+        .btn-load { background: transparent; color: var(--text-main); border: 1px solid var(--border); padding: 10px 30px; font-family: 'Inter', sans-serif; cursor: pointer; transition: 0.3s; font-size: 0.85rem; border-radius: 30px; font-weight: 400;}
+        .btn-load:hover { border-color: var(--accent-main); color: var(--accent-main); }
+
+        /* === LOWER SECTIONS === */
+        .path-section { padding: 80px 4%; background: var(--bg-panel); position: relative; z-index: 2; border-top: 1px solid var(--border); transition: all 0.5s ease;}
+        .path-grid { grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 900px; margin: 0 auto; display: grid; }
+        .path-step { text-align: center; padding: 20px; transition: 0.4s; }
+        .step-icon { width: 60px; height: 60px; margin: 0 auto 15px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--accent-main); background: transparent; }
+        .path-step h3 { font-family: 'Playfair Display', serif; margin-bottom: 10px; font-size: 1.2rem; font-weight: 400;}
+        .path-step p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; font-weight: 300;}
+
+        footer { position: relative; z-index: 2; background: var(--bg-header); border-top: 1px solid var(--border); padding: 60px 4% 20px; color: var(--text-muted); transition: 0.5s; font-size: 0.85rem;}
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 40px; margin-bottom: 40px; }
+        .footer-brand h2 { margin-bottom: 10px; font-size: 1.3rem; color: var(--text-main); font-weight: 400;}
+        .footer-brand span { color: var(--accent-main); }
+        .footer-column h4 { color: var(--text-main); font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.9rem; margin-bottom: 15px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { font-weight: 300; transition: 0.2s; }
+        .footer-links a:hover { color: var(--accent-main); }
+        .newsletter input { width: 100%; background: transparent; border: 1px solid var(--border); padding: 10px; color: var(--text-main); margin-bottom: 10px; outline: none; font-family: 'Inter', sans-serif; border-radius: 4px; font-weight: 300; font-size: 0.85rem;}
+        .btn-subscribe { background: var(--accent-main); color: var(--text-inverse); border: none; padding: 10px 20px; cursor: pointer; font-family: 'Inter', sans-serif; width: 100%; transition: 0.3s; font-weight: 400; border-radius: 4px;}
+        .btn-subscribe:hover { opacity: 0.9; }
+        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.75rem; font-weight: 300; opacity: 0.7;}
+
+        /* === CUSTOM POPUP / TOAST STYLES === */
+        #toast-container {
+            position: fixed; bottom: 30px; right: 30px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .theme-toast {
+            background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-main);
+            padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            display: flex; align-items: center; gap: 15px; font-family: 'Inter', sans-serif; font-weight: 400;
+            backdrop-filter: blur(15px); transform: translateX(120%); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .theme-toast.show { transform: translateX(0); opacity: 1; }
+        .theme-toast i { font-size: 1.5rem; color: var(--accent-main); }
+        .theme-toast.error { border-color: #ff4c4c; }
+        .theme-toast.error i { color: #ff4c4c; }
+
+        /* === BACK TO TOP BUTTON STYLES === */
+        #backToTop {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--bg-header);
+            border: 1px solid var(--border);
+            color: var(--accent-main);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 999;
+            backdrop-filter: blur(10px);
+        }
+        #backToTop.show { opacity: 1; visibility: visible; }
+        #backToTop:hover { transform: translateY(-5px); border-color: var(--accent-main); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+
+        @media (max-width: 768px) { 
+            .footer-grid { grid-template-columns: 1fr 1fr; } 
+            .slide h2 { font-size: 2.2rem; } 
+            .vault-slide { flex-direction: column; text-align: center; padding: 50px 4%; }
+            .path-grid { grid-template-columns: 1fr; }
+            #toast-container { right: 20px; bottom: 20px; left: 20px; }
+            .theme-toast { justify-content: center; }
+            #backToTop { bottom: 20px; left: 20px; width: 40px; height: 40px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="dust-canvas"></canvas>
+
+    <header>
+        <div class="header-main">
+            <a href="index.html" class="brand"><i class="fas fa-book-reader"></i> Book<span>Wanderer</span></a>
+            
+            <form class="search-box" onsubmit="event.preventDefault(); searchBooks();">
+                <input type="text" id="searchInput" placeholder="Search for books, authors..." onkeyup="searchBooks()">
+                <button type="button" onclick="searchBooks()"><i class="fas fa-search"></i></button>
+            </form>
+            
+            <div class="nav-icons" style="margin-left: auto; display: flex; gap: 20px; align-items: center;">
+                <a href="index.html" class="icon-item"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="sell.html" class="icon-item"><i class="fas fa-tag"></i><span>Sell Books</span></a>
+                <a href="checkout.html" class="icon-item"><i class="fas fa-shopping-bag"></i><span id="cart-count">Cart (0)</span></a>
+                <a href="login.html" class="icon-item" id="auth-btn"><i class="fas fa-user"></i><span>Login</span></a>
+                
+                <div class="theme-switcher">
+                    <div class="theme-btn btn-default" onclick="setTheme('default')" title="Classic Library"></div>
+                    <div class="theme-btn btn-pink" onclick="setTheme('pink')" title="Chic Workspace"></div>
+                    <div class="theme-btn btn-pastel" onclick="setTheme('pastel')" title="Pastel Dream"></div>
+                </div>
+            </div>
+        </div>
+        <div class="cat-nav">
+            <span onclick="renderBooks('tech')" class="cat-link">Academic</span>
+            <span onclick="renderBooks('fiction')" class="cat-link">Fiction</span>
+            <span onclick="renderBooks('history')" class="cat-link">History</span>
+            <span onclick="renderBooks('science')" class="cat-link">Science</span>
+            <span onclick="renderBooks('philosophy')" class="cat-link">Philosophy</span>
+            <span onclick="renderBooks('all')" class="cat-link" style="color: var(--accent-main);">View All</span>
+        </div>
+    </header>
+
+    <div id="promo-wrappers">
+        <div class="hero-section">
+            <div class="hero-container">
+                <div class="slide active">
+                    <div class="slide-content">
+                        
+                        <div id="promo-banner" style="display:none; background: rgba(0, 0, 0, 0.15); color: var(--text-main); padding: 6px 8px 6px 18px; border-radius: 30px; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; border: 1px solid var(--border); margin-bottom: 5px; align-items: center; width: max-content; backdrop-filter: blur(5px);">
+                            <span id="banner-offer-name" style="color: var(--accent-main); margin-right: 8px; font-weight: 700; letter-spacing: 1px;"></span>
+                            SAVE <span id="banner-discount"></span>% WITH CODE: 
+                            <span id="banner-code" style="background: var(--accent-main); color: var(--text-inverse); padding: 6px 14px; border-radius: 20px; font-weight: 700; margin-left: 12px; letter-spacing: 1.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"></span>
+                        </div>
+                        
+                        <h2>The <span>BookWanderer</span> Collection</h2>
+                        <p class="serif" style="font-size: 1.1rem; color: var(--text-muted);">Discover pre-loved, rare, and essential books curated for every kind of reader.</p>
+                        <a href="#library-content" class="btn-hero">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sigil-row">
+            <div class="sigil" onclick="renderBooks('tech')"><div class="sigil-circle"><i class="fas fa-laptop"></i></div><span>Tech</span></div>
+            <div class="sigil" onclick="renderBooks('fiction')"><div class="sigil-circle"><i class="fas fa-book"></i></div><span>Fiction</span></div>
+            <div class="sigil" onclick="renderBooks('history')"><div class="sigil-circle"><i class="fas fa-landmark"></i></div><span>History</span></div>
+            <div class="sigil" onclick="renderBooks('science')"><div class="sigil-circle"><i class="fas fa-flask"></i></div><span>Science</span></div>
+            <div class="sigil" onclick="renderBooks('philosophy')"><div class="sigil-circle"><i class="fas fa-lightbulb"></i></div><span>Philosophy</span></div>
+        </div>
+
+        <div class="vault-section" id="vault-slider-section">
+            <div class="vault-slide active">
+                <div class="vault-content">
+                    <h4>COMING SOON</h4>
+                    <h2>THE <span style="color: var(--accent-sec); font-style: italic; font-family: 'Playfair Display', serif; text-transform: none;">Upcoming</span> ARCHIVES</h2>
+                    <p>Be the first to reserve the most anticipated releases of the season.</p>
+                    <a href="#library-content" class="btn-hero" style="font-size: 0.8rem;">VIEW PRE-ORDERS</a>
+                </div>
+                <div class="vault-image-container">
+                    <a href="book-details.html?id=2" style="display: block; cursor: pointer;">
+                        <div class="book-3d-wrapper">
+                            <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400&auto=format&fit=crop" alt="Upcoming Book">
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="shelf-wrapper" id="library-content">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <h3 id="search-header-text" style="font-size: 1.5rem; font-family: 'Playfair Display', serif;">Library Catalog</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);"><span id="book-total">0</span> Books Found</span>
+        </div>
+        
+        <div class="book-grid" id="main-grid"></div>
+
+        <div id="suggested-section" style="display: none; margin-top: 80px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <h3 style="font-size: 1.3rem; font-family: 'Playfair Display', serif; color: var(--accent-sec);">Discover More from the Archives</h3>
+            </div>
+            <div class="book-grid" id="suggested-grid"></div>
+        </div>
+
+        <div class="load-more-container" id="load-more-area">
+            <button class="btn-load" onclick="loadMore()">Load More Books</button>
+        </div>
+    </div>
+
+    <div class="path-section" id="how-it-works-section">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 style="font-size: 2rem;">How It <span style="color: var(--accent-sec); font-style: italic; font-family: 'Playfair Display', serif;">Works</span></h2>
+        </div>
+        <div class="path-grid">
+            <div class="path-step">
+                <div class="step-icon"><i class="fas fa-search"></i></div>
+                <h3>Find a Book</h3>
+                <p>Browse our extensive catalog to find exactly what you need for your studies or your personal collection.</p>
+            </div>
+            <div class="path-step">
+                <div class="step-icon"><i class="fas fa-tag"></i></div>
+                <h3>Buy at a Discount</h3>
+                <p>Purchase high-quality pre-loved books at a fraction of the cost of buying brand new.</p>
+            </div>
+            <div class="path-step">
+                <div class="step-icon"><i class="fas fa-box-open"></i></div>
+                <h3>Sell to Us</h3>
+                <p>Finished with your books? Sell them back to the library to earn cash and help other readers.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>Book<span>Wanderer</span></h2>
+                <p style="font-weight: 300; line-height: 1.6; font-size: 0.85rem; margin-top: 10px;">A modern library for readers to buy, sell, and discover amazing books.</p>
+            </div>
+            <div class="footer-column">
+                <h4>My Account</h4>
+                <ul class="footer-links">
+                    <li><a href="login.html">Sign In</a></li>
+                    <li><a href="sell.html">Sell Books</a></li>
+                    <li><a href="checkout.html">View Cart</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <ul class="footer-links">
+                    <li><a href="support.html?tab=faq">FAQ</a></li>
+                    <li><a href="support.html?tab=shipping">Shipping Policy</a></li>
+                    <li><a href="support.html?tab=contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Stay Updated</h4>
+                <input type="email" placeholder="Enter your email...">
+                <button class="btn-subscribe">Subscribe</button>
+            </div>
+        </div>
+        <div class="footer-bottom">&copy; 2026 BookWanderer | Built for Book Lovers</div>
+    </footer>
+
+    <div id="backToTop" onclick="scrollToTop()" title="Return to Top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        const API_URL = "http://localhost:3000";
+        let fullLibrary = []; 
+        let currentCategory = 'all';
+
+        // UPGRADED: Reads the new offer_name directly into the sleek pill
+        async function fetchActivePromo() {
+            try {
+                const res = await fetch(`${API_URL}/promo`);
+                const data = await res.json();
+                if (data.discount > 0) {
+                    document.getElementById('banner-offer-name').innerText = data.offer_name ? data.offer_name + " | " : "";
+                    document.getElementById('banner-discount').innerText = data.discount;
+                    document.getElementById('banner-code').innerText = data.code;
+                    document.getElementById('promo-banner').style.display = 'flex';
+                }
+            } catch (err) { console.error("Could not load promo banner", err); }
+        }
+
+        function showThemeToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            toast.className = `theme-toast ${type}`;
+            let iconClass = 'fa-check-circle';
+            if(type === 'error') iconClass = 'fa-exclamation-circle';
+            
+            toast.innerHTML = `<i class="fas ${iconClass}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400); 
+            }, 3000);
+        }
+
+        function setTheme(themeName) {
+            if (themeName === 'default') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', themeName);
+            }
+            localStorage.setItem('bookwanderer_theme', themeName);
+        }
+
+        function initDust() {
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            const particleCount = 70;
+
+            for(let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const isPink = document.documentElement.getAttribute('data-theme') === 'pink';
+                const isPastel = document.documentElement.getAttribute('data-theme') === 'pastel';
+                
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    
+                    if (isPink) ctx.fillStyle = `rgba(255, 133, 194, ${p.alpha})`;
+                    else if (isPastel) ctx.fillStyle = `rgba(162, 210, 255, ${p.alpha})`;
+                    else ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    
+                    ctx.fill();
+                });
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        let vaultSlideIndex = 0;
+        let vaultSlideInterval;
+
+        function initVaultSlider() {
+            const slides = document.querySelectorAll('.vault-slide');
+            const dots = document.querySelectorAll('.vault-dot');
+            if(slides.length === 0) return;
+
+            window.goToVaultSlide = function(index) {
+                slides.forEach(s => s.classList.remove('active'));
+                dots.forEach(d => d.classList.remove('active'));
+                
+                vaultSlideIndex = index;
+                
+                slides[vaultSlideIndex].classList.add('active');
+                dots[vaultSlideIndex].classList.add('active');
+            };
+
+            function nextVaultSlide() {
+                let nextIndex = (vaultSlideIndex + 1) % slides.length;
+                goToVaultSlide(nextIndex);
+            }
+
+            const startInterval = () => {
+                clearInterval(vaultSlideInterval);
+                vaultSlideInterval = setInterval(nextVaultSlide, 2000);
+            };
+            
+            const vaultSection = document.getElementById('vault-slider-section');
+            if(vaultSection) {
+                vaultSection.addEventListener('mouseenter', () => clearInterval(vaultSlideInterval));
+                vaultSection.addEventListener('mouseleave', startInterval);
+            }
+            
+            startInterval();
+        }
+
+        function updateVaultSlider() {
+            const vaultSection = document.getElementById('vault-slider-section');
+            if (!vaultSection || fullLibrary.length === 0) return;
+
+            const featuredBooks = fullLibrary.slice(0, 4);
+            const slideTags = ["COMING SOON", "FEATURED COLLECTION", "MEMBER EXCLUSIVE", "STAFF PICKS"];
+            const slideAccents = ["Upcoming", "Vintage", "Discount", "Masterpiece"];
+            
+            let slidesHTML = '';
+            let dotsHTML = '<div class="vault-controls">';
+
+            featuredBooks.forEach((book, index) => {
+                const isActive = index === 0 ? 'active' : '';
+                slidesHTML += `
+                    <div class="vault-slide ${isActive}">
+                        <div class="vault-content">
+                            <h4>${slideTags[index]}</h4>
+                            <h2>THE <span style="color: var(--accent-sec); font-style: italic; font-family: 'Playfair Display', serif; text-transform: none;">${slideAccents[index]}</span> ARCHIVES</h2>
+                            <p>${book.title} by ${book.author}.</p>
+                            
+                            <a href="book-details.html?id=${book.id}" class="btn-hero" style="font-size: 0.8rem; display: inline-block; margin-top: 15px;">VIEW DETAILS</a>
+                        </div>
+                        <div class="vault-image-container">
+                            <a href="book-details.html?id=${book.id}" style="display: block; cursor: pointer;">
+                                <div class="book-3d-wrapper">
+                                    <img src="${book.image}" alt="${book.title}">
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                dotsHTML += `<div class="vault-dot ${isActive}" onclick="goToVaultSlide(${index})"></div>`;
+            });
+
+            dotsHTML += `</div>`;
+            vaultSection.innerHTML = slidesHTML + dotsHTML;
+            initVaultSlider(); 
+        }
+
+        let currentDisplayedCount = 0;
+        const BOOKS_PER_PAGE = 16; 
+        let currentFilteredBooks = [];
+
+        async function fetchLibrary() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '<p style="color: var(--text-muted); text-align:center; grid-column: 1/-1;"><i class="fas fa-spinner fa-spin"></i> Retrieving the Archives...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/books`);
+                const result = await response.json();
+                fullLibrary = result.data;
+                
+                updateVaultSlider();
+                renderBooks('all');
+            } catch (error) {
+                console.error("Error:", error);
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #ff4c4c;">Could not connect to database. Make sure your local server is running.</p>';
+            }
+        }
+
+        function loadMore() {
+            const grid = document.getElementById('main-grid');
+            const nextBatch = currentFilteredBooks.slice(currentDisplayedCount, currentDisplayedCount + BOOKS_PER_PAGE);
+            
+            if (nextBatch.length === 0 && currentDisplayedCount === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; font-weight: 300;">No books found in this section.</p>';
+                document.getElementById('load-more-area').style.display = 'none';
+                return;
+            }
+
+            nextBatch.forEach(book => {
+                grid.innerHTML += `
+                    <div class="book-card">
+                        <a href="book-details.html?id=${book.id}" style="display:block;">
+                            <div class="cover-box">
+                                <img src="${book.image}" alt="${book.title}" loading="lazy">
+                                <button class="btn-action" onclick="event.preventDefault(); addToCart(${book.id})">Add to Cart</button>
+                            </div>
+                        </a>
+                        <div class="book-info">
+                            <a href="book-details.html?id=${book.id}" style="color: inherit; text-decoration: none;">
+                                <h3>${book.title}</h3>
+                            </a>
+                            <p>${book.author}</p>
+                            <div class="price">₹ ${book.price}</div>
+                        </div>
+                    </div>`;
+            });
+
+            currentDisplayedCount += nextBatch.length;
+
+            const loadBtnArea = document.getElementById('load-more-area');
+            if (currentDisplayedCount >= currentFilteredBooks.length) {
+                loadBtnArea.style.display = 'none';
+            } else {
+                loadBtnArea.style.display = 'flex';
+            }
+        }
+
+        function renderBooks(filterCat = 'all') {
+            currentCategory = filterCat;
+            document.getElementById('searchInput').value = ''; 
+            
+            document.getElementById('promo-wrappers').style.display = 'block';
+            document.getElementById('how-it-works-section').style.display = 'block';
+            document.getElementById('suggested-section').style.display = 'none';
+            document.getElementById('search-header-text').innerHTML = `Library Catalog`;
+            
+            currentFilteredBooks = fullLibrary.filter(b => filterCat === 'all' || b.category === filterCat);
+            currentDisplayedCount = 0;
+            document.getElementById('main-grid').innerHTML = ''; 
+            
+            loadMore(); 
+            
+            document.getElementById('book-total').innerText = currentFilteredBooks.length;
+
+            const librarySection = document.getElementById('library-content');
+            if (librarySection) {
+                librarySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function searchBooks() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            if (!query) {
+                renderBooks(currentCategory);
+                return;
+            }
+
+            document.getElementById('promo-wrappers').style.display = 'none';
+            document.getElementById('how-it-works-section').style.display = 'none';
+
+            currentFilteredBooks = fullLibrary.filter(book => 
+                book.title.toLowerCase().includes(query) || 
+                book.author.toLowerCase().includes(query) ||
+                book.category.toLowerCase().includes(query)
+            );
+
+            document.getElementById('search-header-text').innerHTML = `Search Results for "<span style="color: var(--accent-main);">${query}</span>"`;
+            document.getElementById('book-total').innerText = currentFilteredBooks.length;
+            
+            currentDisplayedCount = 0;
+            document.getElementById('main-grid').innerHTML = '';
+            loadMore();
+
+            const suggestedSection = document.getElementById('suggested-section');
+            const unmatchedBooks = fullLibrary.filter(book => !currentFilteredBooks.includes(book));
+            
+            if (currentFilteredBooks.length < 4 && unmatchedBooks.length > 0) {
+                suggestedSection.style.display = 'block';
+                const sugGrid = document.getElementById('suggested-grid');
+                sugGrid.innerHTML = ''; 
+                unmatchedBooks.slice(0, 5).forEach(book => {
+                    sugGrid.innerHTML += `
+                        <div class="book-card">
+                            <a href="book-details.html?id=${book.id}" style="display:block;">
+                                <div class="cover-box">
+                                    <img src="${book.image}" alt="${book.title}" loading="lazy">
+                                    <button class="btn-action" onclick="event.preventDefault(); addToCart(${book.id})">Add to Cart</button>
+                                </div>
+                            </a>
+                            <div class="book-info">
+                                <h3>${book.title}</h3>
+                                <p>${book.author}</p>
+                                <div class="price">₹ ${book.price}</div>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                suggestedSection.style.display = 'none';
+            }
+
+            document.getElementById('library-content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function addToCart(bookId) {
+            const userJSON = localStorage.getItem('user');
+            if (!userJSON) {
+                showThemeToast("Please sign in to add items to your cart.", "error");
+                setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+                return;
+            }
+
+            const book = fullLibrary.find(b => b.id === bookId);
+            if (!book) return;
+
+            const user = JSON.parse(userJSON);
+
+            try {
+                const getRes = await fetch(`${API_URL}/cart/${user.email}`);
+                const getData = await getRes.json();
+                let serverCart = getData.cart_data || [];
+
+                serverCart.push({ 
+                    id: book.id, 
+                    title: book.title, 
+                    price: book.price,
+                    image: book.image,
+                    author: book.author,
+                    condition: book.condition
+                });
+
+                const postRes = await fetch(`${API_URL}/cart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_email: user.email, cart_data: serverCart })
+                });
+
+                if (postRes.ok) {
+                    showThemeToast(`"${book.title}" added to your secure cart!`, "success");
+                    updateCartCount();
+                }
+            } catch (err) {
+                console.error("Cart sync failed:", err);
+                showThemeToast("Could not sync with the library vault.", "error");
+            }
+        }
+
+        async function updateCartCount() {
+            const userJSON = localStorage.getItem('user');
+            const countEl = document.getElementById('cart-count');
+            
+            if (!userJSON) {
+                countEl.innerText = `Cart (0)`;
+                return;
+            }
+
+            const user = JSON.parse(userJSON);
+            try {
+                const res = await fetch(`${API_URL}/cart/${user.email}`);
+                const data = await res.json();
+                const cart = data.cart_data || [];
+                countEl.innerText = `Cart (${cart.length})`;
+            } catch(e) {
+                countEl.innerText = `Cart (0)`;
+            }
+        }
+
+        function checkUserStatus() {
+            const userData = localStorage.getItem('user');
+            const authBtn = document.getElementById('auth-btn');
+            
+            if (userData && authBtn) {
+                const user = JSON.parse(userData);
+                
+                if (user.email === 'book.wanderer13@gmail.com') {
+                    authBtn.href = "admin.html"; 
+                    authBtn.innerHTML = `<i class="fas fa-cog"></i><span>Dashboard</span>`;
+                } else {
+                    authBtn.href = "account.html"; 
+                    authBtn.innerHTML = `<i class="fas fa-user-circle"></i><span>Account</span>`;
+                }
+                
+                authBtn.style.color = "var(--accent-main)"; 
+                
+                const newBtn = authBtn.cloneNode(true);
+                authBtn.parentNode.replaceChild(newBtn, authBtn);
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('scroll', () => {
+            const bttBtn = document.getElementById('backToTop');
+            if (window.scrollY > 600) {
+                bttBtn.classList.add('show');
+            } else {
+                bttBtn.classList.remove('show');
+            }
+        });
+
+        window.onload = () => { 
+            initDust();
+            initVaultSlider();
+            fetchLibrary(); 
+            updateCartCount(); 
+            checkUserStatus(); 
+            fetchActivePromo(); 
+        };
+    </script>
+</body>
+</html>
