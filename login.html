@@ -4,138 +4,383 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Access | BookWanderer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* All your existing styles stay exactly the same */
-        :root { --bg-overlay: rgba(31, 20, 18, 0.80); --bg-panel: rgba(42, 28, 26, 0.85); --accent-main: #d4af37; --text-main: #f4ebd8; --border: rgba(193, 127, 89, 0.3); --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop'); }
-        body { background-image: var(--theme-bg-image); background-size: cover; background-attachment: fixed; font-family: 'Inter', sans-serif; color: var(--text-main); position: relative; min-height: 100vh; display: flex; flex-direction: column; }
-        body::before { content: ''; position: fixed; inset: 0; background: var(--bg-overlay); z-index: -1; backdrop-filter: blur(4px); }
-        header { background: rgba(31, 20, 18, 0.95); padding: 15px 4%; border-bottom: 1px solid var(--border); }
-        .brand { font-family: 'Cinzel'; font-size: 1.6rem; text-decoration: none; color: var(--text-main); }
+        /* === DYNAMIC THEME VARIABLES === */
+        :root {
+            --bg-overlay: rgba(31, 20, 18, 0.80); 
+            --bg-panel: rgba(42, 28, 26, 0.85); 
+            --bg-header: rgba(31, 20, 18, 0.95);
+            --card-bg: rgba(42, 28, 26, 0.6);
+            --accent-main: #d4af37; 
+            --accent-sec: #c17f59; 
+            --text-main: #f4ebd8; 
+            --text-muted: #e0d0c1;
+            --text-inverse: #1f1412;
+            --border: rgba(193, 127, 89, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pink"] {
+            --bg-overlay: rgba(18, 18, 20, 0.80); 
+            --bg-panel: rgba(30, 25, 30, 0.85); 
+            --bg-header: rgba(15, 15, 18, 0.95);
+            --card-bg: rgba(25, 20, 25, 0.6);
+            --accent-main: #ff47a3; 
+            --accent-sec: #ff85c2; 
+            --text-main: #ffffff; 
+            --text-muted: #d1b8c4;
+            --text-inverse: #121212;
+            --border: rgba(255, 71, 163, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1618220179428-22790b46a0eb?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pastel"] {
+            --bg-overlay: linear-gradient(135deg, rgba(255, 175, 204, 0.75), rgba(162, 210, 255, 0.75)); 
+            --bg-panel: rgba(255, 255, 255, 0.6); 
+            --bg-header: rgba(255, 255, 255, 0.90);
+            --card-bg: rgba(255, 255, 255, 0.5);
+            --accent-main: #8a5aeb; 
+            --accent-sec: #ff7aa2; 
+            --text-main: #2b2533; 
+            --text-muted: #575061;
+            --text-inverse: #ffffff;
+            --border: rgba(255, 175, 204, 0.6); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        /* === CORE STYLES === */
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        
+        body { 
+            background-image: var(--theme-bg-image); background-size: cover; background-position: center; background-attachment: fixed;
+            font-family: 'Inter', sans-serif; font-weight: 300; color: var(--text-main);
+            overflow-x: hidden; transition: background-image 0.5s ease-in-out; position: relative;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; background: var(--bg-overlay);
+            z-index: -1; transition: background 0.5s ease-in-out; backdrop-filter: blur(4px); 
+        }
+
+        #dust-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.15; mix-blend-mode: screen; }
+
+        h1, h2, h3, h4, .brand { font-family: 'Cinzel', serif; font-weight: 400; letter-spacing: 1px; color: var(--text-main); }
+        .serif { font-family: 'Playfair Display', serif; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+
+        /* === HEADER === */
+        header { position: sticky; top: 0; z-index: 1000; background: var(--bg-header); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.5s;}
+        .header-main { padding: 15px 4%; display: flex; align-items: center; justify-content: space-between; gap: 30px; position: relative; z-index: 10; }
+        .brand { font-size: 1.6rem; font-weight: 500; display: flex; align-items: center; gap: 10px; }
         .brand span { color: var(--accent-main); }
-        .auth-container { background: rgba(42, 28, 26, 0.6); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 450px; margin: auto; backdrop-filter: blur(15px); overflow: hidden; }
+        .nav-icons { display: flex; gap: 25px; align-items: center; }
+        .icon-item { color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 5px; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.5px;}
+        .icon-item:hover { color: var(--accent-main); transform: translateY(-2px); }
+        .icon-item i { font-size: 1.1rem; color: var(--text-main); }
+
+        /* === FORM STYLES === */
+        .auth-section { padding: 60px 4%; position: relative; z-index: 2; display: flex; justify-content: center; min-height: 80vh; align-items: center;}
+        .auth-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); backdrop-filter: blur(15px); overflow: hidden; }
         .auth-tabs { display: flex; border-bottom: 1px solid var(--border); }
-        .auth-tab { flex: 1; text-align: center; padding: 20px; cursor: pointer; color: #e0d0c1; transition: 0.3s; }
-        .auth-tab.active { color: var(--accent-main); border-bottom: 2px solid var(--accent-main); font-weight: 700; }
+        .auth-tab { flex: 1; text-align: center; padding: 20px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--text-muted); transition: 0.3s; background: rgba(0,0,0,0.1); }
+        .auth-tab.active { color: var(--accent-main); background: transparent; font-weight: 700; border-bottom: 2px solid var(--accent-main); }
         .auth-body { padding: 40px; }
-        .auth-form { display: none; }
-        .auth-form.active { display: block; animation: fadeIn 0.4s ease; }
+        .auth-form { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .auth-form.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-size: 0.8rem; color: var(--accent-main); text-transform: uppercase; }
-        .form-control { width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; }
-        .btn-submit { width: 100%; padding: 15px; background: var(--accent-main); color: #1f1412; border: none; border-radius: 30px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .forgot-link { display: block; text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--accent-main); cursor: pointer; text-decoration: underline; }
+        .form-header { text-align: center; margin-bottom: 30px; }
+        .form-header h2 { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
+        .form-header p { color: var(--text-muted); font-size: 0.9rem; }
+        .input-group { margin-bottom: 20px; position: relative; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 14px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 300; transition: 0.3s; outline: none; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--accent-main); color: var(--text-inverse); border: none; border-radius: 30px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-small { padding: 10px 15px; font-size: 0.85rem; margin-top: 10px; width: auto; border-radius: 6px; }
+        .flex-row { display: flex; gap: 10px; align-items: flex-start; }
+        .flex-column { display: flex; flex-direction: column; flex: 1; }
         .hidden { display: none !important; }
-        .error-msg { color: #ff4c4c; font-size: 0.8rem; margin-top: 5px; }
-        footer { padding: 20px; text-align: center; font-size: 0.8rem; color: #e0d0c1; border-top: 1px solid var(--border); }
+        .error-message { color: #ff4c4c; font-size: 0.8rem; margin-top: 6px; display: none; font-weight: 500; }
+        .error-message.active { display: block; }
+        
+        .forgot-link { display: block; text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--accent-main); cursor: pointer; text-decoration: underline; opacity: 0.8; }
+        .forgot-link:hover { opacity: 1; }
+
+        footer { position: relative; z-index: 2; background: var(--bg-header); border-top: 1px solid var(--border); padding: 20px 4%; color: var(--text-muted); font-size: 0.85rem; text-align: center;}
     </style>
 </head>
 <body>
 
-    <header><a href="index.html" class="brand">Book<span>Wanderer</span></a></header>
+    <canvas id="dust-canvas"></canvas>
 
-    <div class="auth-container">
-        <div class="auth-tabs" id="auth-tabs">
-            <div class="auth-tab active" onclick="switchTab('login')">Sign In</div>
-            <div class="auth-tab" onclick="switchTab('register')">Register</div>
+    <header>
+        <div class="header-main">
+            <a href="index.html" class="brand"><i class="fas fa-book-reader"></i> Book<span>Wanderer</span></a>
+            <div class="nav-icons" style="margin-left: auto; display: flex; gap: 20px; align-items: center;">
+                <a href="index.html" class="icon-item"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="sell.html" class="icon-item"><i class="fas fa-tag"></i><span>Sell Books</span></a>
+                <a href="checkout.html" class="icon-item"><i class="fas fa-shopping-bag"></i><span id="cart-count">Cart (0)</span></a>
+                <a href="login.html" class="icon-item" style="color: var(--accent-main);"><i class="fas fa-user"></i><span>Login</span></a>
+            </div>
         </div>
+    </header>
 
-        <div class="auth-body">
-            <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
-                <h2 style="text-align:center; margin-bottom:20px;">Welcome <span>Back</span></h2>
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" id="loginEmail" class="form-control" required>
-                </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" class="form-control" required>
-                </div>
-                <button type="submit" class="btn-submit">Sign In</button>
-                <span class="forgot-link" onclick="switchTab('forgot')">Forgot Password?</span>
-            </form>
+    <div class="auth-section">
+        <div class="auth-container">
+            <div class="auth-tabs" id="auth-tab-row">
+                <div class="auth-tab active" onclick="switchTab('login')">Sign In</div>
+                <div class="auth-tab" onclick="switchTab('register')">Register</div>
+            </div>
 
-            <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
-                 <h2 style="text-align:center; margin-bottom:20px;">Join <span>Library</span></h2>
-                 <button type="submit" class="btn-submit">Register</button>
-            </form>
-
-            <form id="forgot-form" class="auth-form" onsubmit="handleForgotPassword(event)">
-                <h2 style="text-align:center; margin-bottom:10px;">Reset <span>Password</span></h2>
-                <p style="text-align:center; font-size:0.8rem; margin-bottom:20px;">We will send a code to verify your identity.</p>
-                
-                <div id="forgot-step-1">
-                    <div class="input-group">
-                        <label>Registered Email</label>
-                        <input type="email" id="forgotEmail" class="form-control" required>
+            <div class="auth-body">
+                <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+                    <div class="form-header">
+                        <h2>Welcome <span>Back</span></h2>
+                        <p>Sign in to access your library account.</p>
                     </div>
-                    <button type="button" class="btn-submit" onclick="sendResetOTP()">Send Verification Code</button>
-                </div>
-
-                <div id="forgot-step-2" class="hidden">
+                    <div id="login-general-error" class="error-message" style="text-align: center; margin-bottom: 15px;"></div>
                     <div class="input-group">
-                        <label style="color: #4caf50;">Enter 6-Digit Code</label>
-                        <input type="text" id="forgotOTP" class="form-control" maxlength="6">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="reader@example.com" required>
                     </div>
                     <div class="input-group">
-                        <label>New Password</label>
-                        <input type="password" id="newPassword" class="form-control">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn-submit">Update Password</button>
-                </div>
-                <span class="forgot-link" onclick="switchTab('login')">Back to Login</span>
-            </form>
+                    <button type="submit" class="btn-submit">Sign In</button>
+                    <span class="forgot-link" onclick="switchTab('forgot')">Forgot Credentials?</span>
+                </form>
+
+                <form id="register-form" class="auth-form" onsubmit="handleFinalRegister(event)">
+                    <div class="form-header">
+                        <h2>Join the <span>Library</span></h2>
+                        <p>Create an account to buy and sell books.</p>
+                    </div>
+                    <div id="reg-general-error" class="error-message" style="text-align: center; margin-bottom: 15px;"></div>
+                    
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regName" class="form-control" placeholder="Jane Doe" required>
+                        <div id="err-regName" class="error-message"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <div class="flex-row">
+                            <div class="flex-column">
+                                <input type="email" id="regEmail" class="form-control" placeholder="jane@example.com" required>
+                                <div id="err-regEmail" class="error-message"></div>
+                            </div>
+                            <button type="button" class="btn-submit btn-small" id="btn-send-otp" onclick="triggerSendOTP()">Send OTP</button>
+                        </div>
+                    </div>
+
+                    <div class="input-group hidden" id="otp-section">
+                        <label style="color: var(--accent-main);">Verification Code Sent!</label>
+                        <div class="flex-row">
+                            <div class="flex-column">
+                                <input type="text" id="regOtp" class="form-control" placeholder="123456" maxlength="6">
+                                <div id="err-regOtp" class="error-message"></div>
+                            </div>
+                            <button type="button" class="btn-submit btn-small" id="btn-verify-otp" onclick="triggerVerifyOTP()">Verify</button>
+                        </div>
+                    </div>
+
+                    <div id="password-section" class="hidden">
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" id="regPassword" class="form-control" placeholder="Min 6 characters">
+                            <div id="err-regPassword" class="error-message"></div>
+                        </div>
+                        <div class="input-group">
+                            <label>Confirm Password</label>
+                            <input type="password" id="regConfirmPassword" class="form-control" placeholder="Confirm password">
+                            <div id="err-regConfirmPassword" class="error-message"></div>
+                        </div>
+                        <button type="submit" class="btn-submit">Create Account</button>
+                    </div>
+                </form>
+
+                <form id="forgot-form" class="auth-form" onsubmit="handleFinalReset(event)">
+                    <div class="form-header">
+                        <h2>Restore <span>Access</span></h2>
+                        <p>Verify your email to reset your credentials.</p>
+                    </div>
+                    <div id="forgot-general-error" class="error-message" style="text-align: center; margin-bottom: 15px;"></div>
+                    
+                    <div id="forgot-step-1">
+                        <div class="input-group">
+                            <label>Registered Email</label>
+                            <div class="flex-row">
+                                <div class="flex-column">
+                                    <input type="email" id="forgotEmail" class="form-control" placeholder="reader@example.com">
+                                </div>
+                                <button type="button" class="btn-submit btn-small" id="btn-forgot-otp" onclick="triggerForgotOTP()">Send Code</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="forgot-step-2" class="hidden">
+                        <div class="input-group">
+                            <label style="color: var(--accent-main);">Verification Code</label>
+                            <input type="text" id="forgotOtpInput" class="form-control" placeholder="123456" maxlength="6">
+                        </div>
+                        <div class="input-group">
+                            <label>New Password</label>
+                            <input type="password" id="resetNewPassword" class="form-control" placeholder="Min 6 characters">
+                        </div>
+                        <button type="submit" class="btn-submit">Update Password</button>
+                    </div>
+                    <span class="forgot-link" onclick="switchTab('login')">Back to Sign In</span>
+                </form>
+            </div>
         </div>
     </div>
 
-    <footer>&copy; 2026 BookWanderer</footer>
+    <footer>
+        &copy; 2026 BookWanderer | Built for Book Lovers
+    </footer>
 
     <script>
         const API_URL = "https://bookwanderer-api.onrender.com";
+        let isUserVerified = false;
+
+        // === THEME ENGINE ===
+        function setTheme(themeName) {
+            if (themeName === 'default' || !themeName) { 
+                document.documentElement.removeAttribute('data-theme'); 
+            } else { 
+                document.documentElement.setAttribute('data-theme', themeName); 
+            }
+            localStorage.setItem('bookwanderer_theme', themeName);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('bookwanderer_theme') || 'default';
+            setTheme(savedTheme);
+        }
+        loadTheme();
+
+        function showError(elementId, message) {
+            const el = document.getElementById(elementId);
+            if (el) { el.innerText = message; el.classList.add('active'); }
+        }
+
+        function clearAllErrors() {
+            document.querySelectorAll('.error-message').forEach(el => { el.innerText = ""; el.classList.remove('active'); });
+        }
 
         function switchTab(tab) {
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            clearAllErrors();
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('auth-tabs').classList.remove('hidden');
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('auth-tab-row').classList.remove('hidden');
 
             if(tab === 'login') {
-                document.getElementById('login-form').classList.add('active');
                 document.querySelectorAll('.auth-tab')[0].classList.add('active');
-            } else if(tab === 'register') {
-                document.getElementById('register-form').classList.add('active');
+                document.getElementById('login-form').classList.add('active');
+            } else if (tab === 'register') {
                 document.querySelectorAll('.auth-tab')[1].classList.add('active');
-            } else if(tab === 'forgot') {
+                document.getElementById('register-form').classList.add('active');
+            } else if (tab === 'forgot') {
                 document.getElementById('forgot-form').classList.add('active');
-                document.getElementById('auth-tabs').classList.add('hidden');
+                document.getElementById('auth-tab-row').classList.add('hidden');
+                document.getElementById('forgot-step-1').classList.remove('hidden');
+                document.getElementById('forgot-step-2').classList.add('hidden');
             }
         }
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
+            clearAllErrors();
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+            const btn = e.target.querySelector('.btn-submit');
+            btn.innerText = "Consulting Archive..."; btn.disabled = true;
+
             try {
-                const res = await fetch(`${API_URL}/login`, {
+                const response = await fetch(`${API_URL}/login`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, password})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
-                const data = await res.json();
-                if(res.ok) {
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    localStorage.setItem('token', data.token);
-                    window.location.href = (email === 'book.wanderer13@gmail.com') ? 'admin.html' : 'index.html';
-                } else { alert(data.error); }
-            } catch(e) { alert("Server Error"); }
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    localStorage.setItem('token', result.token);
+                    window.location.href = (email.toLowerCase() === 'book.wanderer13@gmail.com') ? 'admin.html' : 'index.html';
+                } else {
+                    showError('login-general-error', result.error || "Invalid Credentials");
+                    btn.innerText = "Sign In"; btn.disabled = false;
+                }
+            } catch (err) {
+                showError('login-general-error', "Connection error.");
+                btn.innerText = "Sign In"; btn.disabled = false;
+            }
         }
 
-        // --- FORGOT PASSWORD LOGIC ---
-        async function sendResetOTP() {
-            const email = document.getElementById('forgotEmail').value;
-            if(!email) return alert("Enter email first");
-            
+        async function triggerSendOTP() {
+            clearAllErrors();
+            const email = document.getElementById('regEmail').value.trim();
+            const btn = document.getElementById('btn-send-otp');
+            btn.innerText = "Sending..."; btn.disabled = true;
+            try {
+                const response = await fetch(`${API_URL}/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                if (response.ok) {
+                    btn.innerText = "Sent!";
+                    document.getElementById('otp-section').classList.remove('hidden');
+                } else { btn.innerText = "Retry"; btn.disabled = false; }
+            } catch (err) { btn.disabled = false; }
+        }
+
+        async function triggerVerifyOTP() {
+            const email = document.getElementById('regEmail').value.trim();
+            const otp = document.getElementById('regOtp').value.trim();
+            const btn = document.getElementById('btn-verify-otp');
+            try {
+                const response = await fetch(`${API_URL}/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+                if (response.ok) {
+                    btn.innerText = "Verified!";
+                    document.getElementById('password-section').classList.remove('hidden');
+                    isUserVerified = true;
+                } else { showError('err-regOtp', "Incorrect."); }
+            } catch (err) { }
+        }
+
+        async function handleFinalRegister(e) {
+            e.preventDefault();
+            if (!isUserVerified) return;
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                if (response.ok) { alert("Created!"); switchTab('login'); }
+            } catch (err) { }
+        }
+
+        // --- FORGOT PASSWORD RECOVERY ---
+        async function triggerForgotOTP() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            const btn = document.getElementById('btn-forgot-otp');
+            if(!email) return alert("Email required.");
+            btn.innerText = "Sending..."; btn.disabled = true;
             try {
                 const res = await fetch(`${API_URL}/send-otp`, {
                     method: 'POST',
@@ -145,29 +390,48 @@
                 if(res.ok) {
                     document.getElementById('forgot-step-1').classList.add('hidden');
                     document.getElementById('forgot-step-2').classList.remove('hidden');
-                    alert("Verification code sent to your email!");
-                } else { alert("User not found or error sending mail."); }
-            } catch(e) { alert("Connection Error"); }
+                } else { btn.innerText = "Retry"; btn.disabled = false; }
+            } catch(e) { btn.disabled = false; }
         }
 
-        async function handleForgotPassword(e) {
+        async function handleFinalReset(e) {
             e.preventDefault();
-            const email = document.getElementById('forgotEmail').value;
-            const otp = document.getElementById('forgotOTP').value;
-            const password = document.getElementById('newPassword').value;
-
+            const email = document.getElementById('forgotEmail').value.trim();
+            const otp = document.getElementById('forgotOtpInput').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value;
             try {
                 const res = await fetch(`${API_URL}/reset-password`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, otp, newPassword: password })
+                    body: JSON.stringify({ email, otp, newPassword })
                 });
-                if(res.ok) {
-                    alert("Password updated! Please login with your new credentials.");
-                    switchTab('login');
-                } else { alert("Invalid code or reset failed."); }
-            } catch(e) { alert("Error updating password."); }
+                if(res.ok) { alert("Updated!"); switchTab('login'); }
+                else { alert("Failed. Check code."); }
+            } catch(e) { }
         }
+
+        function initDust() {
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const particles = [];
+            for(let i=0; i<70; i++) { particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, radius: Math.random()*2+0.5, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, alpha: Math.random()*0.5+0.2 }); }
+            function animate() {
+                requestAnimationFrame(animate); ctx.clearRect(0,0,canvas.width,canvas.height);
+                const theme = document.documentElement.getAttribute('data-theme');
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                    if (theme === 'pink') ctx.fillStyle = `rgba(255, 133, 194, ${p.alpha})`;
+                    else if (theme === 'pastel') ctx.fillStyle = `rgba(162, 210, 255, ${p.alpha})`;
+                    else ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    ctx.fill();
+                });
+            }
+            animate();
+        }
+        window.onload = initDust;
     </script>
 </body>
 </html>
