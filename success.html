@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Requisition Secured | BookWanderer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-deep: #1a1010; --bg-panel: #2b1b1b; --accent-copper: #c17f59; --text-cream: #e6e1d3; }
+        body { 
+            background: var(--bg-deep); color: var(--text-cream); font-family: 'Lato', sans-serif; 
+            background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+            height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0;
+        }
+        .success-box {
+            background: var(--bg-panel); border: 1px solid var(--accent-copper);
+            padding: 50px; text-align: center; border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            max-width: 500px;
+        }
+        .success-box i { font-size: 4rem; color: #27ae60; margin-bottom: 20px; }
+        h1 { font-family: 'Cinzel', serif; color: var(--accent-copper); margin-bottom: 10px; }
+        p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; opacity: 0.8; }
+        .btn-home {
+            background: var(--accent-copper); color: #1a1010; text-decoration: none;
+            padding: 15px 30px; font-family: 'Cinzel', serif; font-weight: bold; border-radius: 2px;
+            transition: 0.3s;
+        }
+        .btn-home:hover { background: #d4af37; }
+    </style>
+</head>
+<body>
+
+    <div class="success-box">
+        <i class="fas fa-check-circle"></i>
+        <h1>Requisition Successful</h1>
+        <p>Your coin has been accepted. The Archivists are currently retrieving your tomes from the vault.</p>
+        <a href="index.html" class="btn-home">Return to the Archive</a>
+    </div>
+
+</body>
+</html>

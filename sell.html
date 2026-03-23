@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscribe Volume | BookWanderer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* === DYNAMIC THEME VARIABLES (SYNCED) === */
+        :root {
+            --bg-overlay: rgba(31, 20, 18, 0.85); 
+            --bg-panel: rgba(42, 28, 26, 0.9); 
+            --bg-header: rgba(31, 20, 18, 0.98);
+            --card-bg: rgba(42, 28, 26, 0.6);
+            --accent-main: #d4af37; 
+            --accent-sec: #c17f59; 
+            --text-main: #f4ebd8; 
+            --text-muted: #e0d0c1;
+            --text-inverse: #1f1412;
+            --border: rgba(193, 127, 89, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pink"] {
+            --bg-overlay: rgba(18, 18, 20, 0.80); 
+            --bg-panel: rgba(30, 25, 30, 0.85); 
+            --bg-header: rgba(15, 15, 18, 0.95);
+            --card-bg: rgba(25, 20, 25, 0.6);
+            --accent-main: #ff47a3; 
+            --text-main: #ffffff; 
+            --border: rgba(255, 71, 163, 0.3); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1618220179428-22790b46a0eb?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        [data-theme="pastel"] {
+            --bg-overlay: linear-gradient(135deg, rgba(255, 175, 204, 0.75), rgba(162, 210, 255, 0.75)); 
+            --bg-panel: rgba(255, 255, 255, 0.6); 
+            --bg-header: rgba(255, 255, 255, 0.90);
+            --card-bg: rgba(255, 255, 255, 0.5);
+            --accent-main: #8a5aeb; 
+            --text-main: #2b2533; 
+            --border: rgba(255, 175, 204, 0.6); 
+            --theme-bg-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-image: var(--theme-bg-image); background-size: cover; background-position: center; background-attachment: fixed;
+            font-family: 'Inter', sans-serif; color: var(--text-main); overflow-x: hidden; position: relative;
+        }
+        body::before { content: ''; position: fixed; inset: 0; background: var(--bg-overlay); z-index: -1; backdrop-filter: blur(4px); }
+        #dust-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.15; }
+
+        header { position: sticky; top: 0; z-index: 1000; background: var(--bg-header); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); }
+        .header-main { padding: 15px 4%; display: flex; align-items: center; justify-content: space-between; }
+        .brand { font-family: 'Cinzel'; font-size: 1.6rem; text-decoration: none; color: var(--text-main); }
+        .brand span { color: var(--accent-main); }
+        
+        .nav-icons { display: flex; gap: 25px; align-items: center; }
+        .icon-item { color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; text-decoration: none; transition: 0.3s; }
+        .icon-item i { font-size: 1.1rem; color: var(--text-main); margin-bottom: 3px; }
+
+        .sell-card {
+            background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
+            padding: 40px; margin: 60px auto; width: 90%; max-width: 900px;
+            display: grid; grid-template-columns: 1fr 300px; gap: 40px; backdrop-filter: blur(20px); position: relative; z-index: 2;
+        }
+        .sell-header { grid-column: span 2; text-align: center; }
+        .sell-header h2 { font-family: 'Cinzel'; font-size: 2.2rem; }
+        .sell-header span { color: var(--accent-main); }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.8rem; text-transform: uppercase; color: var(--accent-main); font-weight: 600; }
+        .form-control { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); outline: none; }
+        .btn-submit { grid-column: span 2; padding: 18px; background: var(--accent-main); color: var(--text-inverse); border: none; border-radius: 50px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <canvas id="dust-canvas"></canvas>
+
+    <header>
+        <div class="header-main">
+            <a href="index.html" class="brand">Book<span>Wanderer</span></a>
+            <div class="nav-icons">
+                <a href="index.html" class="icon-item"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="checkout.html" class="icon-item"><i class="fas fa-shopping-bag"></i><span id="cart-count">Cart (0)</span></a>
+                <a href="login.html" class="icon-item" id="auth-btn"><i class="fas fa-user"></i><span>Login</span></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="sell-card">
+        <div class="sell-header">
+            <h2>Submit to <span>Archives</span></h2>
+            <p>Help expand the library by providing your book details below.</p>
+        </div>
+
+        <form id="sellBookForm" onsubmit="handleSellSubmit(event)">
+            <div class="input-group">
+                <label>Book Title</label>
+                <input type="text" id="title" class="form-control" required placeholder="e.g. The Alchemist">
+            </div>
+            <div class="input-group">
+                <label>Author</label>
+                <input type="text" id="author" class="form-control" required placeholder="Full Name">
+            </div>
+            <div class="input-group">
+                <label>Asking Price (₹)</label>
+                <input type="number" id="price" class="form-control" required>
+            </div>
+        </form>
+
+        <div class="cover-section">
+            <label style="display:block; margin-bottom:10px; font-size:0.8rem; text-transform:uppercase; color:var(--accent-main); font-weight:600;">Book Cover</label>
+            <div id="upload-box" style="border: 2px dashed var(--border); border-radius: 8px; height: 300px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.1);" onclick="document.getElementById('imageFile').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 2rem;"></i>
+                <img id="preview" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none;">
+            </div>
+            <input type="file" id="imageFile" hidden accept="image/*" onchange="previewImg(this)">
+        </div>
+
+        <button type="submit" form="sellBookForm" class="btn-submit">Dispatch to Archives</button>
+    </div>
+
+    <script>
+        // === THEME ENGINE ===
+        function loadTheme() {
+            const theme = localStorage.getItem('bookwanderer_theme') || 'default';
+            if (theme !== 'default') document.documentElement.setAttribute('data-theme', theme);
+        }
+        loadTheme();
+
+        // === STRICT SYNC LOGIC (FIXES CART 1 BUG) ===
+        function syncStatus() {
+            const userData = localStorage.getItem('user');
+            const authBtn = document.getElementById('auth-btn');
+            const countEl = document.getElementById('cart-count');
+
+            if (userData && userData !== "undefined") {
+                const user = JSON.parse(userData);
+                authBtn.href = (user.email === 'book.wanderer13@gmail.com') ? "admin.html" : "account.html";
+                authBtn.innerHTML = `<i class="fas fa-user-circle"></i><span>Account</span>`;
+                
+                // Real-time Cart Count
+                const cartData = localStorage.getItem('cart');
+                if (!cartData || cartData === "undefined" || cartData === "[]") {
+                    countEl.innerText = "Cart (0)";
+                } else {
+                    countEl.innerText = `Cart (${JSON.parse(cartData).length})`;
+                }
+            } else {
+                // GUEST STATE - FORCE ZERO
+                countEl.innerText = "Cart (0)";
+                authBtn.href = "login.html";
+                authBtn.innerHTML = `<i class="fas fa-user"></i><span>Login</span>`;
+            }
+        }
+
+        function previewImg(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result; img.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function initDust() {
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const particles = [];
+            for(let i=0; i<70; i++) { particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, radius: Math.random()*2+0.5, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, alpha: Math.random()*0.5+0.2 }); }
+            function animate() {
+                requestAnimationFrame(animate); ctx.clearRect(0,0,canvas.width,canvas.height);
+                const theme = document.documentElement.getAttribute('data-theme');
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    if (theme === 'pink') ctx.fillStyle = `rgba(255, 133, 194, ${p.alpha})`;
+                    else if (theme === 'pastel') ctx.fillStyle = `rgba(162, 210, 255, ${p.alpha})`;
+                    else ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    ctx.fill();
+                });
+            }
+            animate();
+        }
+
+        window.onload = () => { initDust(); syncStatus(); };
+    </script>
+</body>
+</html>
