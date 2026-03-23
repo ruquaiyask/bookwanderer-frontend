@@ -198,7 +198,7 @@
             const userData = JSON.parse(localStorage.getItem('user'));
             const orderData = { user_email: userData.email, total_amount: currentTotal, items: JSON.parse(localStorage.getItem('cart')) };
             try {
-                const res = await fetch('http://localhost:3000/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
+                const res = await fetch('https://bookwanderer-api.onrender.com/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
                 if (res.ok) { localStorage.removeItem('cart'); window.location.href = 'success.html'; }
             } catch (e) { alert("Transaction failed."); }
         }
